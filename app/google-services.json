@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "783062128348",
+    "firebase_url": "https://mesibo-ca8bc.firebaseio.com",
+    "project_id": "mesibo-ca8bc",
+    "storage_bucket": "mesibo-ca8bc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:783062128348:android:6d7bf190c0cbf639",
+        "android_client_info": {
+          "package_name": "org.mesibo.messenger"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "783062128348-9hdramf55p52o22fsvp4ofdt67m0kisc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCRweM6PpCdcq9M4qZcCSX2Br5BQT1lfWQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

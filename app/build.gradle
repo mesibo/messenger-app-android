@@ -1,0 +1,88 @@
+
+apply plugin: 'com.android.application'
+apply from: "https://mesibo.com/api/mesibo.gradle"
+
+ext {
+    PUBLISH_VERSION = "1.0.0"
+    PUBLISH_VERSION_CODE = 1
+}
+
+
+android {
+
+    compileSdkVersion project.Mesibo_compileSdkVersion
+
+    defaultConfig {
+        applicationId "org.mesibo.messenger"
+        minSdkVersion project.Mesibo_minSdkVersion
+        targetSdkVersion project.Mesibo_targetSdkVersion
+        versionCode project.PUBLISH_VERSION_CODE
+        versionName project.PUBLISH_VERSION
+        buildConfigField "String", "BUILD_VERSION", "\"${project.PUBLISH_VERSION}\""
+        buildConfigField "String", "BUILD_TIMESTAMP", "\"${project.Mesibo_buildDate}\""
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    lintOptions {
+        disable 'MissingTranslation'
+    }
+
+    compileOptions {
+      sourceCompatibility 1.8
+      targetCompatibility 1.8
+    }
+
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            debuggable true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    testImplementation 'junit:junit:4.12'
+
+    implementation "com.android.support:appcompat-v7:${project.Mesibo_supportLibVersion}"
+    implementation "com.android.support:support-v4:${project.Mesibo_supportLibVersion}"
+    implementation "com.android.support:recyclerview-v7:${project.Mesibo_supportLibVersion}"
+    implementation "com.android.support:cardview-v7:${project.Mesibo_supportLibVersion}"
+    implementation "com.android.support:support-annotations:${project.Mesibo_supportLibVersion}"
+    implementation "com.android.support:design:${project.Mesibo_supportLibVersion}"
+    implementation "com.android.support:preference-v7:${project.Mesibo_supportLibVersion}"
+
+    implementation 'com.facebook.android:account-kit-sdk:4.+'
+
+    implementation "com.google.android.gms:play-services-maps:${project.Mesibo_playServiceVersion}"
+    implementation "com.google.android.gms:play-services-location:${project.Mesibo_playServiceVersion}"
+    implementation "com.google.android.gms:play-services-places:${project.Mesibo_playServiceVersion}"
+    implementation "com.google.android.gms:play-services-gcm:${project.Mesibo_playServiceVersion}"
+
+    implementation 'com.intuit.sdp:sdp-android:1.0.6'
+    annotationProcessor 'com.jakewharton:butterknife:7.0.1'
+    implementation "com.google.code.gson:gson:${project.Mesibo_gsonVersion}"
+    implementation "com.mesibo.api:ContactUtils:${project.MesiboVersion_ContactUtils}"
+
+    implementation "com.mesibo.api:uihelper:${project.MesiboVersion_UiHelper}"
+    implementation "com.mesibo.api:mesibo:${project.MesiboVersion_Api}"
+    implementation "com.mesibo.api:ui:${project.MesiboVersion_Ui}"
+    implementation "com.mesibo.api:calls:${project.MesiboVersion_Calls}"
+
+
+}
+
+// this line need to be at bottom else it gives error of version conflict
+apply plugin: 'com.google.gms.google-services'
+

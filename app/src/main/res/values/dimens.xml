@@ -1,0 +1,14 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+
+    <dimen name="card_margin">16dp</dimen>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <!-- Default screen margins, per the Android Design guidelines. -->
+
+    <dimen name="card_left_margin">12dp</dimen>
+    <dimen name="card_right_margin">12dp</dimen>
+
+    <!-- Default screen margins, per the Android Design guidelines. -->
+
+
+    </resources>

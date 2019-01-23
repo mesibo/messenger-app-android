@@ -1,0 +1,28 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.tringme.mychat.StartChatting">
+
+    <!--
+    <item
+        android:id="@+id/action_attachment"
+        android:icon="@drawable/ic_add_white_24dp"
+        android:title="Media"
+        app:showAsAction="ifRoom" />
+        -->
+
+    <item
+        android:id="@+id/action_videocall"
+        android:icon="@drawable/ic_videocam_white_24dp"
+        android:visible="true"
+        android:title="Video Call"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_call"
+        android:icon="@drawable/ic_call_white_24dp"
+        android:visible="true"
+        android:title="Call"
+        app:showAsAction="always" />
+
+</menu>

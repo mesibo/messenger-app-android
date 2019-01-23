@@ -1,0 +1,185 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.mesibo.messaging.Settings.BasicSettingsFragment">
+
+    <!-- TODO: Update blank fragment layout -->
+    <LinearLayout
+
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/set_picture_name_status_layout"
+
+            >
+
+            <ImageView
+                android:id="@+id/set_user_image"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_margin="20dp"
+                android:layout_gravity="center_vertical"
+                android:src="@drawable/default_user_image"
+                />
+
+            <!--
+            <com.makeramen.roundedimageview.RoundedImageView
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/imageView1"
+                android:layout_height="80dp"
+                android:layout_width="80dp"
+                android:layout_margin="20dp"
+                android:src="@drawable/avatar_300"
+                app:riv_corner_radius="30dip"
+                app:riv_border_width="2dip"
+                app:riv_border_color="#333333"
+                app:riv_mutate_background="true"
+                app:riv_tile_mode="repeat"
+                app:riv_oval="true" />
+            -->
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_gravity="center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <com.mesibo.emojiview.EmojiconTextView
+                    android:text=""
+                    android:textSize="22sp"
+                    android:id="@+id/set_self_user_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    />
+
+                <com.mesibo.emojiview.EmojiconTextView
+                    android:text="Hi This is new good morning how are you what do you do "
+                    android:id="@+id/set_self_status"
+                    android:maxLines="3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="@color/md_grey_300"
+            >
+        </View>
+
+        <LinearLayout
+            android:layout_margin="10dp"
+            android:id="@+id/set_data_layout"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/set_data_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:tint="@color/md_grey_500"
+                android:src="@drawable/ic_data_usage_black_24dp"
+                android:layout_margin="10dp"
+
+
+                />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Data usage"
+                android:layout_marginLeft="15dp"
+                android:layout_gravity="center_vertical"
+                android:gravity="center_vertical"
+                android:textSize="18sp"
+                />
+
+        </LinearLayout>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="@color/md_grey_300"
+            >
+        </View>
+        <LinearLayout
+            android:layout_margin="10dp"
+            android:id="@+id/set_about_layout"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/set_about_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:tint="@color/md_grey_500"
+                android:src="@drawable/ic_info_black_24dp"
+                android:layout_margin="10dp"
+                />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:text="About"
+                android:layout_gravity="center_vertical"
+                android:gravity="center_vertical"
+                android:textSize="18sp"
+                />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="@color/md_grey_300"
+            >
+        </View>
+
+        <LinearLayout
+            android:layout_margin="10dp"
+            android:id="@+id/set_logout_layout"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/set_logout_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:tint="@color/md_grey_500"
+                android:src="@drawable/ic_power_settings_new_black_24dp"
+                android:layout_margin="10dp"
+                />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:text="Logout"
+                android:layout_gravity="center_vertical"
+                android:gravity="center_vertical"
+                android:textSize="18sp"
+                />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="@color/md_grey_300"
+            >
+        </View>
+    </LinearLayout>
+
+
+</FrameLayout>

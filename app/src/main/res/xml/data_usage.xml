@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:key="preferenceScreen" >
+
+    <PreferenceCategory
+        android:title="Media auto-download">
+
+
+        <android.support.v7.preference.SwitchPreferenceCompat
+            android:title="Auto Download"
+            android:summary="Auto download media files while on cellular data. Auto download is always enabled for WiFi."
+            android:key="auto"
+            android:defaultValue="true"
+            ></android.support.v7.preference.SwitchPreferenceCompat>
+
+    </PreferenceCategory>
+
+
+    <PreferenceCategory
+        android:key="preferenceCategorycell"
+        android:title="When cell data connected"
+        android:summary="By this option we can customise auto download for media file type"
+        >
+
+
+        <android.support.v7.preference.SwitchPreferenceCompat
+            android:title="Photos"
+            android:key="cell_photo"
+            android:defaultValue="false"
+
+            ></android.support.v7.preference.SwitchPreferenceCompat>
+        <android.support.v7.preference.SwitchPreferenceCompat
+            android:title="Videos"
+            android:key="cell_video"
+            android:defaultValue="false"
+
+            ></android.support.v7.preference.SwitchPreferenceCompat>
+        <android.support.v7.preference.SwitchPreferenceCompat
+            android:title="Audio"
+            android:key="cell_audio"
+            android:defaultValue="false"
+
+            ></android.support.v7.preference.SwitchPreferenceCompat>
+
+        <android.support.v7.preference.SwitchPreferenceCompat
+            android:title="Documents"
+            android:key="cell_doc"
+            android:defaultValue="false"
+
+            ></android.support.v7.preference.SwitchPreferenceCompat>
+
+
+
+    </PreferenceCategory>
+
+
+    <PreferenceCategory
+        android:key="preferenceCategorywifi"
+        android:title="When wifi joined"
+        android:summary="By this option we can customise auto download for media file type"
+        >
+
+
+        <android.support.v7.preference.SwitchPreferenceCompat
+            android:title="Photos"
+            android:key="wifi_photo"
+            android:defaultValue="false"
+
+            ></android.support.v7.preference.SwitchPreferenceCompat>
+        <android.support.v7.preference.SwitchPreferenceCompat
+            android:title="Videos"
+            android:key="wifi_video"
+            android:defaultValue="false"
+
+            ></android.support.v7.preference.SwitchPreferenceCompat>
+        <android.support.v7.preference.SwitchPreferenceCompat
+            android:title="Audio"
+            android:key="wifi_audio"
+            android:defaultValue="false"
+
+            ></android.support.v7.preference.SwitchPreferenceCompat>
+
+        <android.support.v7.preference.SwitchPreferenceCompat
+            android:title="Documents"
+            android:key="wifi_doc"
+            android:defaultValue="false"
+
+            ></android.support.v7.preference.SwitchPreferenceCompat>
+
+
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="preferenceCategoryroam"
+        android:title="When roaming"
+        android:summary="By this option we can customise auto download for media file type"
+        >
+
+
+
+
+        <android.support.v7.preference.SwitchPreferenceCompat
+            android:title="Photos"
+            android:key="roam_photo"
+            android:defaultValue="false"
+
+            ></android.support.v7.preference.SwitchPreferenceCompat>
+        <android.support.v7.preference.SwitchPreferenceCompat
+            android:title="Videos"
+            android:key="roam_video"
+            android:defaultValue="false"
+
+            ></android.support.v7.preference.SwitchPreferenceCompat>
+        <android.support.v7.preference.SwitchPreferenceCompat
+            android:title="Audio"
+            android:key="roam_audio"
+            android:defaultValue="false"
+
+            ></android.support.v7.preference.SwitchPreferenceCompat>
+
+        <android.support.v7.preference.SwitchPreferenceCompat
+            android:title="Documents"
+            android:key="roam_doc"
+            android:defaultValue="false"
+
+            ></android.support.v7.preference.SwitchPreferenceCompat>
+
+
+
+    </PreferenceCategory>
+
+
+
+</PreferenceScreen>
