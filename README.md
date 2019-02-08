@@ -11,7 +11,7 @@ Mesibo Messenger is an open-source app with real-time messaging, voice and video
 - Online status (presence) and real-time profile update
 - Push notifications
 
-Latest versions are also available through Google Play Store and Apple App Srore:
+Latest versions are also available through Google Play Store and Apple App Store:
 
 <a href="https://play.google.com/store/apps/details?id=com.mesibo.mesiboapplication"><img
   alt="Get it on Google Play" height="80"
