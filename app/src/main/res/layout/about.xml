@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@android:color/white"
+    android:orientation="vertical" >
+
+    <!--
+    <ImageView
+        android:id="@+id/tringmeLogo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginBottom="15sp"
+        android:layout_marginTop="15sp"
+        android:adjustViewBounds="true"
+        android:maxWidth="300dip"
+        android:scaleType="centerInside"
+        android:src="@drawable/tringme150" />
+
+        -->
+
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1"
+        android:background="@color/myPrimaryColor"
+        >
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|center_horizontal"
+                android:gravity="center_horizontal"
+                android:text="mesibo"
+                android:layout_marginTop="30dp"
+                android:padding="5dp"
+                android:textSize="72dp"
+                android:textColor="@color/white"
+                android:id="@+id/mesibologo" />
+
+            <TextView
+                android:id="@+id/version"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|center_horizontal"
+                android:text="1.0.0"
+                android:padding="5dp"
+                android:gravity="center"
+                android:visibility="visible"
+                android:textColor="@color/white"
+                android:textAppearance="@android:style/TextAppearance.Medium"
+
+                />
+
+            <TextView
+                android:id="@+id/builddate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|center_horizontal"
+                android:text="Today"
+                android:padding="5dp"
+                android:gravity="center"
+                android:visibility="visible"
+                android:textColor="@color/white"
+                android:textAppearance="@android:style/TextAppearance.Medium"
+
+                />
+
+            <TextView
+                android:id="@+id/appDescription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|center_horizontal"
+                android:gravity="center_horizontal"
+                android:text=""
+                android:paddingTop="5dp"
+                android:paddingBottom="20dp"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:textColor="@color/white"
+                android:visibility="gone"
+                android:textAppearance="@android:style/TextAppearance.Medium"
+                />
+
+            <TextView
+                android:id="@+id/website"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="5sp"
+                android:layout_marginTop="5sp"
+                android:autoLink="web"
+                android:text="https://mesibo.com"
+                android:textAppearance="@android:style/TextAppearance.Medium"
+                android:textColorLink="@color/white" />
+
+
+            <!--
+            <TextView
+                android:id="@+id/tringmeSupportLink"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center"
+                android:layout_marginBottom="5sp"
+                android:layout_marginTop="5sp"
+                android:autoLink="web"
+                android:text="http://tringmesupport.com"
+                android:textAppearance="@android:style/TextAppearance.Small" />
+                -->
+
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

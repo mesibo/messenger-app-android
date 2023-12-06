@@ -1,0 +1,9 @@
+<resources tools:ignore="ExtraTranslation" xmlns:tools="http://schemas.android.com/tools">
+
+    <string name="app_name">Mesibo</string>
+    <string name="menu_conf">Conferencing</string>
+    <string name="menu_calllogs">Call Logs</string>
+    <string name="menu_settings">Settings</string>
+
+
+</resources>
