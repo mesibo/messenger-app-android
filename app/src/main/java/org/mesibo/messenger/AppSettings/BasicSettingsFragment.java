@@ -2,7 +2,7 @@
 * By accessing or copying this work, you agree to comply with the following   *
 * terms:                                                                      *
 *                                                                             *
-* Copyright (c) 2019-2023 mesibo                                              *
+* Copyright (c) 2019-2024 mesibo                                              *
 * https://mesibo.com                                                          *
 * All rights reserved.                                                        *
 *                                                                             *
@@ -17,7 +17,7 @@
 * This software is provided "as is" without warranties. mesibo and its        *
 * contributors are not liable for any damages arising from its use.           *
 *                                                                             *
-* Documentation: https://mesibo.com/documentation/                            *
+* Documentation: https://docs.mesibo.com/                                     *
 *                                                                             *
 * Source Code Repository: https://github.com/mesibo/                          *
 *******************************************************************************/
@@ -147,17 +147,13 @@ public class BasicSettingsFragment extends Fragment {
     public void onResume() {
         super.onResume();
         mUser = Mesibo.getSelfProfile();
-        Bitmap image = mUser.getImageOrThumbnail();
+        Bitmap image = mUser.getImage().getImageOrThumbnail();
         if(null != image) {
             mUserImage.setImageDrawable(new RoundImageDrawable(image));
         }
 
         mUserName.setText(mUser.getName());
+        mUserStatus.setText(mUser.getString("status", ""));
 
-        if(!TextUtils.isEmpty(mUser.getStatus())) {
-            mUserStatus.setText(mUser.getStatus());
-        }else {
-            mUserStatus.setText("");
-        }
     }
 }

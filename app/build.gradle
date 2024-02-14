@@ -1,6 +1,6 @@
 
 apply plugin: 'com.android.application'
-apply from: "https://api.mesibo.com/mesibo.gradle"
+apply from: "https://cdn.mesibo.com/android/mesibo.gradle"
 
 
 ext {

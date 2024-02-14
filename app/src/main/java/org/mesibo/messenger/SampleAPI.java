@@ -2,7 +2,7 @@
 * By accessing or copying this work, you agree to comply with the following   *
 * terms:                                                                      *
 *                                                                             *
-* Copyright (c) 2019-2023 mesibo                                              *
+* Copyright (c) 2019-2024 mesibo                                              *
 * https://mesibo.com                                                          *
 * All rights reserved.                                                        *
 *                                                                             *
@@ -17,7 +17,7 @@
 * This software is provided "as is" without warranties. mesibo and its        *
 * contributors are not liable for any damages arising from its use.           *
 *                                                                             *
-* Documentation: https://mesibo.com/documentation/                            *
+* Documentation: https://docs.mesibo.com/                                     *
 *                                                                             *
 * Source Code Repository: https://github.com/mesibo/                          *
 *******************************************************************************/
@@ -244,7 +244,7 @@ public class SampleAPI  {
         MesiboProfile u = Mesibo.getProfile(gid);
         if(null == u) return;
         //u.flag |= MesiboProfile.FLAG_DELETED;
-        u.setStatus("Not a group member"); // can be better handle dynamically
+        u.setString("status", "Not a group member"); // can be better handle dynamically
         u.save();
     }
 
@@ -427,7 +427,7 @@ public class SampleAPI  {
         }
 
         // set database after setting access token so that it's associated with user
-        Mesibo.setDatabase("mesibo.db", 0);
+        Mesibo.setDatabase("mesibo.db");
 
         // do this after setting token and db
         if(resetContacts) {
@@ -508,26 +508,6 @@ public class SampleAPI  {
         handler.sendRequest(b, null, null);
     }
 
-    public static boolean getContacts(ArrayList<String> contacts, boolean contact, boolean syncNow) {
-        if(null == contacts || contacts.size() == 0)
-            return false;
-
-        String[] c = contacts.toArray(new String[contacts.size()]);
-        Mesibo.syncContacts(c, contact, true, 0, syncNow);
-        return true;
-    }
-
-    public static boolean deleteContacts(ArrayList<String> contacts) {
-        if(null == contacts || 0 == contacts.size())
-            return false;
-
-        String[] c = contacts.toArray(new String[contacts.size()]);
-        Mesibo.syncContacts(c, false, true, 0, true);
-
-        return true;
-
-    }
-
     public static void notify(int id, String title, String message) {
         mNotifyUser.sendNotification(id, title, message);
     }
@@ -580,24 +560,6 @@ public class SampleAPI  {
 
         mNotifyUser.sendNotificationInList(name, message);
     }
-
-    public static void addContacts(ArrayList<MesiboProfile> profiles, boolean hidden) {
-
-        ArrayList<String> c = new ArrayList<String>();
-
-        for(int i=0; i < profiles.size(); i++) {
-            MesiboProfile profile = profiles.get(i);
-            if(!TextUtils.isEmpty(profile.address))
-                c.add(profile.address);
-
-        }
-
-        if(c.size() == 0)
-            return;
-
-        getContacts(c, hidden, true);
-    }
-
 
     private static String mGCMToken = null;
     private static boolean mGCMTokenSent = false;

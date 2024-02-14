@@ -2,7 +2,7 @@
 * By accessing or copying this work, you agree to comply with the following   *
 * terms:                                                                      *
 *                                                                             *
-* Copyright (c) 2019-2023 mesibo                                              *
+* Copyright (c) 2019-2024 mesibo                                              *
 * https://mesibo.com                                                          *
 * All rights reserved.                                                        *
 *                                                                             *
@@ -17,7 +17,7 @@
 * This software is provided "as is" without warranties. mesibo and its        *
 * contributors are not liable for any damages arising from its use.           *
 *                                                                             *
-* Documentation: https://mesibo.com/documentation/                            *
+* Documentation: https://docs.mesibo.com/                                     *
 *                                                                             *
 * Source Code Repository: https://github.com/mesibo/                          *
 *******************************************************************************/
@@ -44,6 +44,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -54,6 +55,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.mesibo.api.Mesibo;
 import com.mesibo.api.MesiboProfile;
@@ -101,6 +103,9 @@ public class EditProfileFragment extends Fragment implements MediaPicker.ImageEd
     public static final String TITLE_PERMISON_CAMERA_FAIL = "Permission Denied";
     public static final String MSG_PERMISON_CAMERA_FAIL = "Camera permission was denied by you! Grant the permission to continue";
 
+    public static final String PROFILE_SAVE_FAIL = "Failed";
+    public static final String PROFILE_SAVE_FAIL_MESSAGE = "Unable to Save Profile. Try again after some time";
+
     public EditProfileFragment() {
         mGroupId = 0;
     }
@@ -116,6 +121,23 @@ public class EditProfileFragment extends Fragment implements MediaPicker.ImageEd
     public MesiboProfile getProfile() {
         if(mGroupId > 0) return Mesibo.getProfile(mGroupId);
         return Mesibo.getSelfProfile();
+    }
+
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        getActivity().getMenuInflater().inflate(R.menu.edit_profile_menu, menu);
+        //mScreen.menu = menu;
+        MenuItem.OnMenuItemClickListener menuhandler = new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                save();
+                return true;
+            }
+        };
+
+        menu.findItem(R.id.action_save).setOnMenuItemClickListener(menuhandler);
     }
 
     @Override
@@ -143,7 +165,7 @@ public class EditProfileFragment extends Fragment implements MediaPicker.ImageEd
 
     void setUserPicture() {
         MesiboProfile profile = getProfile();
-        Bitmap image = profile.getImageOrThumbnail();
+        Bitmap image = profile.getImage().getImageOrThumbnail();
 
         if(null != image) {
             mProfileImage.setImageDrawable(new RoundImageDrawable(image));
@@ -153,9 +175,9 @@ public class EditProfileFragment extends Fragment implements MediaPicker.ImageEd
 
         if(true) return;
 
-        String url = profile.getImageUrl();
+        String url = profile.getImage().getUrl();
 
-        String filePath = getProfile().getImagePath();
+        String filePath = getProfile().getImage().getImagePath();
 
         Bitmap b;
         if(Mesibo.fileExists(filePath)) {
@@ -168,11 +190,31 @@ public class EditProfileFragment extends Fragment implements MediaPicker.ImageEd
         }
     }
 
+    void save() {
+        String name = mEmojiNameEditText.getText().toString();
+        String status = mEmojiStatusEditText.getText().toString();
+
+        MesiboProfile profile = getProfile();
+        if(!TextUtils.isEmpty(name)) {
+            profile.setName(name);
+            profile.setString("status", status);
+            profile.save();
+        }
+
+        if(mLaunchMesibo) {
+            MesiboUI.MesiboUserListScreenOptions opts = new MesiboUI.MesiboUserListScreenOptions();
+            opts.keepRunning = true;
+            UIManager.launchMesibo(getActivity(), opts);
+        }
+
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_register_new_profile, container, false);
+        setHasOptionsMenu(true);
 
         final ActionBar ab = ((AppCompatActivity)getActivity()).getSupportActionBar();
         if(null != ab) {
@@ -187,37 +229,13 @@ public class EditProfileFragment extends Fragment implements MediaPicker.ImageEd
 
         mHost = this;
         mPhoneNumber = (TextView) v.findViewById(R.id.profile_self_phone);
-
-        mSaveBtn = (LinearLayout) v.findViewById(R.id.register_profile_save);
-        mSaveBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                String name = mEmojiNameEditText.getText().toString();
-                String status = mEmojiStatusEditText.getText().toString();
-
-		MesiboProfile profile = getProfile();
-		if(!TextUtils.isEmpty(name)) {
-			profile.setName(name);
-			profile.setStatus(status);
-			profile.save();
-		}
-		if(mLaunchMesibo) {
-                    MesiboUI.MesiboUserListScreenOptions opts = new MesiboUI.MesiboUserListScreenOptions();
-                    opts.keepRunning = true;
-                    UIManager.launchMesibo(getActivity(), opts);
-		}
-		getActivity().finish();
-	    }
-	});
-
 	mProfileImage = (ImageView) v.findViewById(R.id.self_user_image);
 	setUserPicture();
 
 	mProfileImage.setOnClickListener(new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
-			UIManager.launchImageViewer(getActivity(), getProfile().getImagePath());
+                UIManager.launchImageViewer(getActivity(), getProfile().getImage().getImagePath());
 		}
 	});
 
@@ -244,6 +262,7 @@ public class EditProfileFragment extends Fragment implements MediaPicker.ImageEd
 					} else if (item.getItemId() == R.id.popup_remove) {
 						setImageProfile(null);
 						MesiboProfile profile = getProfile();
+                            			profile.deleteImages();
 						profile.setImage(null);
 						profile.save();
 						return true;
@@ -445,10 +464,9 @@ public class EditProfileFragment extends Fragment implements MediaPicker.ImageEd
         } else {
             mPhoneNumber.setVisibility(View.GONE);
         }
-        if(!TextUtils.isEmpty(profile.getStatus()))
-            mEmojiStatusEditText.setText(profile.getStatus());
-        if(!TextUtils.isEmpty(profile.getName()))
-            mEmojiNameEditText.setText(profile.getName());
+
+        mEmojiStatusEditText.setText(profile.getString("status", ""));
+        mEmojiNameEditText.setText(profile.getName());
     }
 
     @Override
@@ -498,6 +516,16 @@ public class EditProfileFragment extends Fragment implements MediaPicker.ImageEd
     }
 
     @Override
+    public void MesiboProfile_onPublish(MesiboProfile mesiboProfile, boolean result) {
+        if(!result)
+            UIManager.showAlert(getActivity(),PROFILE_SAVE_FAIL, PROFILE_SAVE_FAIL_MESSAGE);
+        else {
+            Toast.makeText(getActivity(), "Profile Updated", Toast.LENGTH_LONG).show();
+            //getActivity().finish();
+        }
+    }
+
+    @Override
     public void MesiboProfile_onEndToEndEncryption(MesiboProfile mesiboProfile, int i) {
 
     }
@@ -508,6 +536,4 @@ public class EditProfileFragment extends Fragment implements MediaPicker.ImageEd
         MesiboProfile profile = getProfile();
         profile.removeListener(this);
     }
-
-
 }
