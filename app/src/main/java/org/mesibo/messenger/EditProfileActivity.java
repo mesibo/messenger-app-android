@@ -27,6 +27,7 @@ package org.mesibo.messenger;
 import android.content.Context;
 import android.content.Intent;
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -36,6 +37,8 @@ import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
 
 import com.mesibo.api.Mesibo;
+import com.mesibo.messaging.MesiboUI;
+import com.mesibo.messaging.MesiboUiDefaults;
 
 
 public class EditProfileActivity extends AppCompatActivity {
@@ -50,6 +53,9 @@ public class EditProfileActivity extends AppCompatActivity {
         if (null == args) {
             return;
         }
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.settings_toolbar);
+        setSupportActionBar(toolbar);
 
         long groupid = args.getLong("groupid", 0);
         boolean launchMesibo = args.getBoolean("launchMesibo", false);
@@ -83,7 +89,6 @@ public class EditProfileActivity extends AppCompatActivity {
             getSupportFragmentManager().popBackStackImmediate();
 
     }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

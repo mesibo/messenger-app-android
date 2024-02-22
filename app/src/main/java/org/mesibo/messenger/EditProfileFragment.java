@@ -67,9 +67,9 @@ import com.mesibo.mediapicker.MediaPicker;
 import com.mesibo.messaging.MesiboUI;
 import com.mesibo.messaging.RoundImageDrawable;
 
-import org.mesibo.messenger.Utils.AppUtils;
-
 import static android.app.Activity.RESULT_OK;
+
+import org.mesibo.messenger.Utils.AppUtils;
 
 public class EditProfileFragment extends Fragment implements MediaPicker.ImageEditorListener, MesiboProfile.Listener
 {

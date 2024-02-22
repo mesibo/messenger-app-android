@@ -208,7 +208,8 @@ public class MesiboListeners implements Mesibo.ConnectionListener, MesiboLoginUi
 
     @Override
     public String Mesibo_onGetProfileName(MesiboProfile profile) {
-        if(profile.isGroup()) return null;
+        if(profile.isGroup())
+		return null;
         MesiboPhoneContact c = Mesibo.getPhoneContactsManager().getPhoneNumberInfo(profile.getAddress(), true);
         return c.formattedPhoneNumber;
     }
