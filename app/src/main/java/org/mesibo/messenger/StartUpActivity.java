@@ -32,6 +32,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.mesibo.api.Mesibo;
 import com.mesibo.messaging.MesiboUI;
 import com.mesibo.uihelper.MesiboUiHelperConfig;
 
@@ -67,6 +68,13 @@ public class StartUpActivity extends AppCompatActivity {
 
 
         mRunInBackground = getIntent().getBooleanExtra(STARTINBACKGROUND, false);
+
+        long elapsed = Mesibo.getTimestamp() - Mesibo.getStartTimestamp();
+
+        Log.e(TAG, "Elapsed " + elapsed + ", " + (mRunInBackground?"background":"foreground"));
+        if(elapsed > 30000)
+            mRunInBackground = false;
+
         if(mRunInBackground) {
             Log.e(TAG, "Moving app to background");
             moveTaskToBack(true);

@@ -34,6 +34,7 @@ import android.text.TextUtils;
 import com.google.gson.Gson;
 import com.mesibo.api.Mesibo;
 import com.mesibo.api.MesiboHttp;
+import com.mesibo.api.MesiboLocationConfig;
 import com.mesibo.api.MesiboMessage;
 import com.mesibo.api.MesiboPhoneContactsManager;
 import com.mesibo.api.MesiboProfile;
@@ -444,6 +445,11 @@ public class SampleAPI  {
         if(0 != Mesibo.start()) {
             return false;
         }
+
+        MesiboLocationConfig lc = new MesiboLocationConfig();
+        lc.backgroundRefresh = false;
+
+        Mesibo.getLocationManager().start(lc);
 
         MesiboPhoneContactsManager contactsManager = Mesibo.getPhoneContactsManager();
         contactsManager.overrideProfileName(true);

@@ -26,6 +26,7 @@ package org.mesibo.messenger;
 
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -59,11 +60,13 @@ import android.widget.Toast;
 
 import com.mesibo.api.Mesibo;
 import com.mesibo.api.MesiboProfile;
+import com.mesibo.api.MesiboSelfProfile;
 import com.mesibo.emojiview.EmojiconEditText;
 import com.mesibo.emojiview.EmojiconGridView;
 import com.mesibo.emojiview.EmojiconsPopup;
 import com.mesibo.emojiview.emoji.Emojicon;
 import com.mesibo.mediapicker.MediaPicker;
+
 import com.mesibo.messaging.MesiboUI;
 import com.mesibo.messaging.RoundImageDrawable;
 
@@ -120,7 +123,9 @@ public class EditProfileFragment extends Fragment implements MediaPicker.ImageEd
 
     public MesiboProfile getProfile() {
         if(mGroupId > 0) return Mesibo.getProfile(mGroupId);
-        return Mesibo.getSelfProfile();
+        MesiboSelfProfile selfProfile = Mesibo.getSelfProfile();
+        selfProfile.setSearchable(true);
+        return selfProfile;
     }
 
 

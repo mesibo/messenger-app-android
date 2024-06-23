@@ -31,6 +31,7 @@ import android.util.Log;
 
 import com.mesibo.api.Mesibo;
 import com.mesibo.calls.api.MesiboCall;
+import com.mesibo.calls.api.MesiboGroupCallUiProperties;
 import com.mesibo.mediapicker.ImagePicker;
 import com.mesibo.mediapicker.MediaPicker;
 import com.mesibo.calls.ui.MesiboCallUi;
@@ -62,6 +63,13 @@ public class MainApplication extends Application implements Mesibo.RestartListen
         MediaPicker.setToolbarColor(opt.mToolbarColor);
         ImagePicker.getInstance().setApp(this);
 
+	// customize call screen
+        MesiboCall.UiProperties up = MesiboCall.getInstance().getDefaultUiProperties();
+        //up.showScreenSharing = true;
+
+	// customize conference call screen
+        MesiboGroupCallUiProperties gcp = MesiboCall.getInstance().getDefaultGroupCallUiProperties();
+        //gcp.exitPrompt = "Exit?";
     }
 
     public static String getRestartIntent() {
