@@ -449,7 +449,8 @@ public class SampleAPI  {
         MesiboLocationConfig lc = new MesiboLocationConfig();
         lc.backgroundRefresh = false;
 
-        Mesibo.getLocationManager().start(lc);
+	// Uncomment to enable location tracking
+        //Mesibo.getLocationManager().start(lc);
 
         MesiboPhoneContactsManager contactsManager = Mesibo.getPhoneContactsManager();
         contactsManager.overrideProfileName(true);
