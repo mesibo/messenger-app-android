@@ -39,6 +39,7 @@ import android.view.View;
 
 import com.google.gson.Gson;
 
+import com.mesibo.api.MesiboDateTime;
 import com.mesibo.api.MesiboGroupProfile;
 import com.mesibo.api.MesiboMessage;
 import com.mesibo.api.MesiboPhoneContact;
@@ -248,7 +249,7 @@ public class MesiboListeners implements Mesibo.ConnectionListener, MesiboLoginUi
     }
 
     @Override
-    public boolean MesiboCall_onNotify(int type, MesiboProfile profile, boolean video) {
+    public boolean MesiboCall_onNotify(int type, MesiboProfile profile, boolean video, MesiboDateTime ts) {
         String subject = null, message = null;
 
         if(true)
