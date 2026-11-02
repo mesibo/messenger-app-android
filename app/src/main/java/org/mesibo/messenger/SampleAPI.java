@@ -1,37 +1,13 @@
-/******************************************************************************
-* By accessing or copying this work, you agree to comply with the following   *
-* terms:                                                                      *
-*                                                                             *
-* Copyright (c) 2019-2024 mesibo                                              *
-* https://mesibo.com                                                          *
-* All rights reserved.                                                        *
-*                                                                             *
-* Redistribution is not permitted. Use of this software is subject to the     *
-* conditions specified at https://mesibo.com . When using the source code,    *
-* maintain the copyright notice, conditions, disclaimer, and  links to mesibo * 
-* website, documentation and the source code repository.                      *
-*                                                                             *
-* Do not use the name of mesibo or its contributors to endorse products from  *
-* this software without prior written permission.                             *
-*                                                                             *
-* This software is provided "as is" without warranties. mesibo and its        *
-* contributors are not liable for any damages arising from its use.           *
-*                                                                             *
-* Documentation: https://docs.mesibo.com/                                     *
-*                                                                             *
-* Source Code Repository: https://github.com/mesibo/                          *
-*******************************************************************************/
-
 package org.mesibo.messenger;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.text.TextUtils;
 
 import com.google.gson.Gson;
+import com.google.gson.annotations.SerializedName;
 import com.mesibo.api.Mesibo;
 import com.mesibo.api.MesiboHttp;
 import com.mesibo.api.MesiboLocationConfig;
@@ -39,13 +15,12 @@ import com.mesibo.api.MesiboMessage;
 import com.mesibo.api.MesiboPhoneContactsManager;
 import com.mesibo.api.MesiboProfile;
 import com.mesibo.calls.api.MesiboCall;
-import com.mesibo.mediapicker.MediaPicker;
-import org.mesibo.messenger.fcm.MesiboRegistrationIntentService;
+import org.mesibo.messenger.fcm.MesiboPushHelper;
 import com.mesibo.messaging.MesiboUI;
+import com.mesibo.messaging.MesiboDialogs;
 
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 
 public class SampleAPI  {
     private static final String TAG="SampleAPI";
@@ -59,6 +34,8 @@ public class SampleAPI  {
     public final static String KEY_SYNCEDCONTACTSTIME = "AppSyncedTsNew";
     public final static String KEY_AUTODOWNLOAD = "autodownload";
     public final static String KEY_GCMTOKEN = "gcmtoken";
+    public final static String KEY_NOTIFY_MESSAGES = "notifymessages";
+    public final static String KEY_NOTIFY_GROUPS = "notifygroups";
 
     public static abstract class ResponseHandler implements MesiboHttp.Listener {
         private MesiboHttp http = null;
@@ -128,16 +105,9 @@ public class SampleAPI  {
             } catch (Exception e) {
 
             }
-            int nwtype = Mesibo.getNetworkConnectivity();
-            if(nwtype == 0xFF) {
-
-            }
-
             http = new MesiboHttp();
             http.url = mApiUrl;
-            try {
-                http.post = j.toString().getBytes();
-            } catch (Exception e) {}
+            http.post = j.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
 
             http.contentType = "application/json";
             http.uploadFile = filePath;
@@ -192,6 +162,10 @@ public class SampleAPI  {
         public String message;
         public String title;
         public String token;
+        // set with the token for a user without a profile yet; Object since it may come as
+        // true, 1 or "1"
+        @SerializedName("new_user")
+        public Object newUser;
         public Contacts[] contacts;
         public String name;
         public String status;
@@ -208,6 +182,13 @@ public class SampleAPI  {
         public int profile;
         public long ts = 0;
         public String tn = null;
+
+        public boolean isNewUser() {
+            if (newUser instanceof Boolean) return (Boolean) newUser;
+            if (newUser instanceof Number) return 0 != ((Number) newUser).intValue();
+            if (newUser instanceof String) return "1".equals(newUser) || "true".equalsIgnoreCase((String) newUser);
+            return false;
+        }
 
         Response() {
             result = null;
@@ -240,15 +221,6 @@ public class SampleAPI  {
         return http.sendRequest(postBunlde, filePath, formFieldName);
     }
 
-    public static void updateDeletedGroup(long gid) {
-        if(0 == gid) return;
-        MesiboProfile u = Mesibo.getProfile(gid);
-        if(null == u) return;
-        //u.flag |= MesiboProfile.FLAG_DELETED;
-        u.setString("status", "Not a group member"); // can be better handle dynamically
-        u.save();
-    }
-
     private static boolean parseResponse(Response response, Context context, boolean uiThread) {
 
             if(null == response || null == response.result) {
@@ -265,12 +237,9 @@ public class SampleAPI  {
                     return false;
                 }
 
-                if(null != response.error && response.error.equalsIgnoreCase("UPDATE")) {
-                }
-
                 if(null != response.errmsg) {
                     if(null == response.errtitle) response.errtitle = "Failed";
-                    UIManager.showAlert(context, response.errtitle, response.errmsg);
+                    MesiboDialogs.alert(context, response.errtitle, response.errmsg);
                 }
                 return false;
             }
@@ -288,10 +257,10 @@ public class SampleAPI  {
             }
 
             if(!TextUtils.isEmpty(response.message)) {
-                UIManager.showAlert(context, response.title, response.message);
+                MesiboDialogs.alert(context, response.title, response.message);
             }
 
-            if(response.op.equals("login") && !TextUtils.isEmpty(response.token)) {
+            if("login".equals(response.op) && !TextUtils.isEmpty(response.token)) {
                 AppConfig.getConfig().token = response.token; //TBD, save into preference
                 AppConfig.getConfig().phone = response.phone;
                 mResetSyncedContacts = true;
@@ -305,7 +274,7 @@ public class SampleAPI  {
                     startSync();
                 }
             }
-            else if(response.op.equals("logout")) {
+            else if("logout".equals(response.op)) {
                 forceLogout();
                 AppConfig.reset();
             }
@@ -318,7 +287,7 @@ public class SampleAPI  {
     public static void showConnectionError(Context context) {
         String title = "No Internet Connection";
         String message = "Your phone is not connected to the internet. Please check your internet connection and try again later.";
-        UIManager.showAlert(context, title, message);
+        MesiboDialogs.alert(context, title, message);
     }
 
     public static void saveLocalSyncedContacts(String contacts, long timestamp) {
@@ -341,7 +310,7 @@ public class SampleAPI  {
 
         if(!TextUtils.isEmpty(AppConfig.getConfig().token)) {
             if(startMesibo(false))
-            	startSync();
+                startSync();
         }
     }
 
@@ -387,14 +356,6 @@ public class SampleAPI  {
         startContactsSync();
     }
 
-    // this is called to indicate first round of sync is done
-    //TBD, this may trigger getcontact with hidden=1 to reach server before last contact sysc getconatct request
-    public static void syncDone() {
-        synchronized (SampleAPI.class) {
-
-        }
-    }
-
     public static void startContactsSync() {
         MesiboPhoneContactsManager contacts = Mesibo.getPhoneContactsManager();
         contacts.overrideProfileName(true);
@@ -403,22 +364,24 @@ public class SampleAPI  {
 
     public static boolean startMesibo(boolean resetContacts) {
 
-        MesiboRegistrationIntentService.startRegistration(mContext, "978866948854", MesiboListeners.getInstance());
+        // sender id comes from google-services.json
+        MesiboPushHelper.startRegistration(MesiboListeners.getInstance());
 
         String path = Mesibo.getBasePath();
-        MediaPicker.setPath(path);
+        MesiboUI.setMediaPath(path);
 
         // add lister
         Mesibo.addListener(MesiboListeners.getInstance());
         MesiboUI.setListener(new UIListener());
-        MesiboCall.getInstance().setListener(MesiboListeners.getInstance());
+        CallListeners.register();
 
         // add file transfer handler
         MesiboFileTransferHelper fileTransferHelper = new MesiboFileTransferHelper();
         //Mesibo.addListener(fileTransferHelper);
 
         // this will also register listener from the constructor
-        mNotifyUser = new NotifyUser(MainApplication.getAppContext());
+        if(null == mNotifyUser)
+            mNotifyUser = new NotifyUser(MainApplication.getAppContext());
 
         // set access token
         if(0 != Mesibo.setAccessToken(AppConfig.getConfig().token)) {
@@ -438,9 +401,6 @@ public class SampleAPI  {
 
         initAutoDownload();
         Mesibo.enableGalleryScanForMedia(true);
-        Mesibo.setSecureScreen(true);
-
-        Mesibo.e2ee().enable(true);
         // Now start mesibo
         if(0 != Mesibo.start()) {
             return false;
@@ -449,8 +409,7 @@ public class SampleAPI  {
         MesiboLocationConfig lc = new MesiboLocationConfig();
         lc.backgroundRefresh = false;
 
-	// Uncomment to enable location tracking
-        //Mesibo.getLocationManager().start(lc);
+        Mesibo.getLocationManager().start(lc);
 
         MesiboPhoneContactsManager contactsManager = Mesibo.getPhoneContactsManager();
         contactsManager.overrideProfileName(true);
@@ -459,7 +418,9 @@ public class SampleAPI  {
             Mesibo.getPhoneContactsManager().reset();
         }
 
+        // explicit package: implicit broadcasts are not delivered to manifest receivers (API 26+)
         Intent restartIntent = new Intent(MainApplication.getRestartIntent());
+        restartIntent.setPackage(MainApplication.getAppContext().getPackageName());
 
         Mesibo.runInBackground(MainApplication.getAppContext(), null, restartIntent);
 
@@ -474,8 +435,8 @@ public class SampleAPI  {
         Mesibo.stop(true);
         Mesibo.getPhoneContactsManager().reset();
         AppConfig.getConfig().reset();
-        mNotifyUser.clearNotification();
-        Mesibo.reset();
+        notifyClear();
+        Mesibo.setAccessToken(null);
 
         UIManager.launchStartupActivity(mContext, true);
     }
@@ -495,7 +456,6 @@ public class SampleAPI  {
     }
 
     public static void login(String phoneNumber, String verificationCode, ResponseHandler handler) {
-        //Mesibo.resetDB();
 
         JSONObject b = new JSONObject();
         try {
@@ -506,7 +466,7 @@ public class SampleAPI  {
                 b.put("otp", verificationCode);
                 if(!TextUtils.isEmpty(AppConfig.getConfig().uniqueid))
                     b.put("device", AppConfig.getConfig().uniqueid);
-	    }
+            }
         } catch (Exception e) {
 
         }
@@ -516,7 +476,7 @@ public class SampleAPI  {
     }
 
     public static void notify(int id, String title, String message) {
-        mNotifyUser.sendNotification(id, title, message);
+        if(null != mNotifyUser) mNotifyUser.sendNotification(id, title, message);
     }
 
     public static void notify(MesiboMessage params, String message) {
@@ -531,6 +491,13 @@ public class SampleAPI  {
 
         //MUST not happen for realtime message
         if(params.groupid > 0 && null == params.groupProfile)
+            return;
+
+        // calls (incl. missed calls) are notified from MesiboCall_onNotify
+        if(params.isCall() || params.isMissedCall())
+            return;
+
+        if(params.groupid > 0 ? !getGroupMessageNotification() : !getMessageNotification())
             return;
 
         MesiboProfile profile = Mesibo.getProfile(params);
@@ -555,66 +522,50 @@ public class SampleAPI  {
             name += " @ " + gp.getName();
         }
 
-        if(params.isMissedCall()) {
-                String subject = "Mesibo Missed Call";
-                message = "You missed a mesibo " + (params.isVideoCall()?"video ":"") + "call from " + profile.getNameOrAddress();
-                SampleAPI.notify(2, subject, message);
-                return;
-        }
-
-        // outgoing or incoming call
-        if(params.isCall()) return;
-
-        mNotifyUser.sendNotificationInList(name, message);
+        if(null != mNotifyUser) mNotifyUser.sendNotificationInList(name, message);
     }
 
     private static String mGCMToken = null;
     private static boolean mGCMTokenSent = false;
-    public static void setGCMToken(String token) {
+    public static synchronized void setGCMToken(String token) {
+        // FCM may rotate the token; a new token must be sent again
+        if(null != token && !token.equals(mGCMToken))
+            mGCMTokenSent = false;
         mGCMToken = token;
         sendGCMToken();
     }
 
-    private static void sendGCMToken() {
-        if(null == mGCMToken || mGCMTokenSent) {
+    private static synchronized void sendGCMToken() {
+        if(null == mGCMToken || mGCMTokenSent)
             return;
-        }
-
-        synchronized (SampleAPI.class) {
-            if(mGCMTokenSent)
-                return;
-            mGCMTokenSent = true;
-        }
-
+        mGCMTokenSent = true;
         Mesibo.setPushToken(mGCMToken);
 
     }
 
-    /* if it is called from service, it's okay to block, we should wait till
-       we are online. As soon as we return, service will be destroyed
+    /* Called on the FCM service thread. Block until online (bounded: FCM allows only a
+       short execution window per message) and give mesibo a moment to receive messages.
      */
+    private static final long PUSH_WAIT_ONLINE_MS = 15000;
     public static void onGCMMessage(boolean inService) {
         Mesibo.setForegroundContext(null, -1, true);
+        if(!inService)
+            return;
 
-        while(inService) {
-            if(Mesibo.STATUS_ONLINE == Mesibo.getConnectionStatus())
-                break;
-
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-            }
-        }
-
-        // wait for messages to receive etc
+        long deadline = System.currentTimeMillis() + PUSH_WAIT_ONLINE_MS;
         try {
+            while(Mesibo.STATUS_ONLINE != Mesibo.getConnectionStatus()
+                    && System.currentTimeMillis() < deadline) {
+                Thread.sleep(500);
+            }
             Thread.sleep(1000);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 
     public static void notifyClear() {
-        mNotifyUser.clearNotification();
+        if(null != mNotifyUser) mNotifyUser.clearNotification();
     }
 
     private static boolean mAutoDownload = true;
@@ -631,6 +582,22 @@ public class SampleAPI  {
 
     public static boolean getMediaAutoDownload() {
         return mAutoDownload;
+    }
+
+    // notification settings: empty (default) = enabled, "0" = disabled
+    private static boolean readFlag(String key) {
+        return !"0".equals(Mesibo.readKey(key));
+    }
+
+    public static boolean getMessageNotification() { return readFlag(KEY_NOTIFY_MESSAGES); }
+    public static boolean getGroupMessageNotification() { return readFlag(KEY_NOTIFY_GROUPS); }
+
+    public static void setMessageNotification(boolean enable) {
+        Mesibo.setKey(KEY_NOTIFY_MESSAGES, enable ? "" : "0");
+    }
+
+    public static void setGroupMessageNotification(boolean enable) {
+        Mesibo.setKey(KEY_NOTIFY_GROUPS, enable ? "" : "0");
     }
 
 

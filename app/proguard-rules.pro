@@ -39,12 +39,22 @@
 }
 
 
--keep class org.mesibo.Messenger.StartUpActivity { *; }
+-keep class com.mesibo.MesiboApplication.StartUpActivity { *; }
+
+#-keep class !com.mesibo.mesiboapplication.SamppleAPI,!com.mesibo.mesiboapplication.MesiboFileTransferHelper {*;}
 
 -keepclasseswithmembernames class * {
     native <methods>;
 }
 
+-keep class com.mesibo.api.** { *;}
+-keep class com.mesibo.messaging.** { *;}
+-keep class com.mesibo.uihelper.** { *;}
+-keep class com.mesibo.mediapicker.** { *;}
+-keep class com.mesibo.contactutils.** { *; }
+-keep class com.mesibo.mesiboapplication.SamppleAPI$Contacts {*; }
+-keep class com.mesibo.mesiboapplication.SamppleAPI$Response {*; }
+-keep class android.arch.lifecycle.** { *; }
 
 -dontwarn com.mesibo.api.**
 -dontwarn com.mesibo.contactutils.**

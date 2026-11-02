@@ -1,32 +1,7 @@
-/******************************************************************************
-* By accessing or copying this work, you agree to comply with the following   *
-* terms:                                                                      *
-*                                                                             *
-* Copyright (c) 2019-2024 mesibo                                              *
-* https://mesibo.com                                                          *
-* All rights reserved.                                                        *
-*                                                                             *
-* Redistribution is not permitted. Use of this software is subject to the     *
-* conditions specified at https://mesibo.com . When using the source code,    *
-* maintain the copyright notice, conditions, disclaimer, and  links to mesibo * 
-* website, documentation and the source code repository.                      *
-*                                                                             *
-* Do not use the name of mesibo or its contributors to endorse products from  *
-* this software without prior written permission.                             *
-*                                                                             *
-* This software is provided "as is" without warranties. mesibo and its        *
-* contributors are not liable for any damages arising from its use.           *
-*                                                                             *
-* Documentation: https://docs.mesibo.com/                                     *
-*                                                                             *
-* Source Code Repository: https://github.com/mesibo/                          *
-*******************************************************************************/
-
 package org.mesibo.messenger;
 
 import com.google.gson.Gson;
 
-import android.app.backup.BackupManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
@@ -64,7 +39,6 @@ public class AppConfig {
     private Context mContext;
     SharedPreferences mSharedPref = null;
 
-
     public static AppConfig getInstance() {
         return _instance;
     }
@@ -95,13 +69,6 @@ public class AppConfig {
         }
     }
 
-    private void backup() {
-    }
-
-    public Boolean isFirstTime() {
-        return firstTime;
-    }
-
     // We could use TAG also - to save/retrieve settings
     public void getAppSetting() {
         Gson gson = new Gson();
@@ -117,13 +84,13 @@ public class AppConfig {
 
         String json = gson.toJson(mConfig);
         spe.putString(systemPreferenceKey, json);
-        spe.commit();
+        spe.apply(); // async write; commit() blocked the main thread on every save
     }
 
     public static void reset() {
+        // reset in place: callers may hold a reference to mConfig
         mConfig.reset();
         save();
-        getInstance().backup();
     }
 
 
@@ -137,112 +104,11 @@ public class AppConfig {
             synchronized (mSharedPref) {
                 SharedPreferences.Editor spe = mSharedPref.edit();
                 putAppSetting(spe);
-                backup();
                 return true;
             }
         } catch (Exception e) {
             Log.d(TAG, "Unable to updateRMS(): " + e.getMessage());
             return false;
         }
-
     }
-
-    public boolean setStringValue(String key, String value) {
-        try {
-            synchronized (mSharedPref) {
-                SharedPreferences.Editor poEditor = mSharedPref.edit();
-                poEditor.putString(key, value);
-                poEditor.commit();
-                return true;
-            }
-        } catch (Exception e) {
-            Log.d(TAG, "Unable to set long value in RMS:" + e.getMessage());
-            return false;
-        }
-    }
-
-    public String getStringValue(String key, String defaultVal) {
-        try {
-            synchronized (mSharedPref) {
-                if (mSharedPref.contains(key))
-                    return mSharedPref.getString(key, defaultVal);
-                return defaultVal;
-            }
-        } catch (Exception e) {
-            Log.d(TAG, "Unable to fet long value in RMS:" + e.getMessage());
-            return defaultVal;
-        }
-    }
-
-    public boolean setLongValue(String key, long value) {
-        try {
-            synchronized (mSharedPref) {
-                SharedPreferences.Editor poEditor = mSharedPref.edit();
-                poEditor.putLong(key, value);
-                poEditor.commit();
-                return true;
-            }
-        } catch (Exception e) {
-            Log.d(TAG, "Unable to set long value in RMS:" + e.getMessage());
-            return false;
-        }
-    }
-
-    public long getLongValue(String key, long defaultVal) {
-        try {
-            synchronized (mSharedPref) {
-                if (mSharedPref.contains(key))
-                    return mSharedPref.getLong(key, defaultVal);
-                return defaultVal;
-            }
-        } catch (Exception e) {
-            Log.d(TAG, "Unable to fet long value in RMS:" + e.getMessage());
-            return defaultVal;
-        }
-    }
-
-    public boolean setIntValue(String key, int value) {
-        try {
-            synchronized (mSharedPref) {
-                SharedPreferences.Editor poEditor = mSharedPref.edit();
-                poEditor.putInt(key, value);
-                poEditor.commit();
-                return true;
-            }
-        } catch (Exception e) {
-            Log.d(TAG, "Unable to set int value in RMS:" + e.getMessage());
-            return false;
-        }
-    }
-
-    public int getIntValue(String key, int defaultVal) {
-
-        try {
-            synchronized (mSharedPref) {
-                if (mSharedPref.contains(key))
-                    return mSharedPref.getInt(key, defaultVal);
-                return defaultVal;
-            }
-        } catch (Exception e) {
-            Log.d(TAG, "Unable to get int value in RMS:" + e.getMessage());
-            return defaultVal;
-        }
-    }
-
-    public boolean setBooleanValue(String key, Boolean value) {
-        try {
-            synchronized (mSharedPref) {
-                SharedPreferences.Editor poEditor = mSharedPref.edit();
-                poEditor.putBoolean(key, value);
-                poEditor.commit();
-                return true;
-            }
-        } catch (Exception e) {
-            Log.d(TAG, "Unable to set long value in RMS:" + e.getMessage());
-            return false;
-        }
-    }
-
-
-};
-
+}

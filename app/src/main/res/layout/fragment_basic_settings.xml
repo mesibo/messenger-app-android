@@ -1,71 +1,53 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.mesibo.messaging.Settings.BasicSettingsFragment">
+    tools:context="org.mesibo.messenger.AppSettings.SettingsActivity">
 
-    <!-- TODO: Update blank fragment layout -->
     <LinearLayout
-
-        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/mesibo_background"
+        android:orientation="vertical">
 
         <LinearLayout
-            android:orientation="horizontal"
+            android:id="@+id/set_picture_name_status_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/set_picture_name_status_layout"
-
-            >
+            android:orientation="horizontal">
 
             <ImageView
                 android:id="@+id/set_user_image"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
-                android:layout_margin="20dp"
                 android:layout_gravity="center_vertical"
-                android:src="@drawable/default_user_image"
-                />
-
-            <!--
-            <com.makeramen.roundedimageview.RoundedImageView
-                xmlns:app="http://schemas.android.com/apk/res-auto"
-                android:id="@+id/imageView1"
-                android:layout_height="80dp"
-                android:layout_width="80dp"
                 android:layout_margin="20dp"
-                android:src="@drawable/avatar_300"
-                app:riv_corner_radius="30dip"
-                app:riv_border_width="2dip"
-                app:riv_border_color="#333333"
-                app:riv_mutate_background="true"
-                app:riv_tile_mode="repeat"
-                app:riv_oval="true" />
-            -->
+                android:src="@drawable/default_user_image" />
 
             <LinearLayout
-                android:orientation="vertical"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:layout_gravity="center_vertical"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+                android:layout_marginEnd="20dp"
+                android:orientation="vertical">
 
-                <com.mesibo.emojiview.EmojiconTextView
-                    android:text=""
-                    android:textSize="22sp"
+                <TextView
                     android:id="@+id/set_self_user_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textSize="22sp"
+                    android:textColor="?android:attr/textColorPrimary"
+                    tools:text="Name" />
 
-                    />
-
-                <com.mesibo.emojiview.EmojiconTextView
-                    android:text="Hi This is new good morning how are you what do you do "
+                <TextView
                     android:id="@+id/set_self_status"
-                    android:maxLines="3"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
+                    android:layout_height="wrap_content"
+                    android:maxLines="3"
+                    android:textColor="?android:attr/textColorPrimary"
+                    tools:text="Status" />
 
             </LinearLayout>
 
@@ -74,112 +56,208 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="0.5dp"
-            android:background="@color/md_grey_300"
-            >
-        </View>
+            android:background="?android:attr/listDivider" />
 
         <LinearLayout
-            android:layout_margin="10dp"
-            android:id="@+id/set_data_layout"
-            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
             <ImageView
-                android:id="@+id/set_data_image"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:tint="@color/md_grey_500"
-                android:src="@drawable/ic_data_usage_black_24dp"
                 android:layout_margin="10dp"
+                android:src="@drawable/ic_message_white_24dp"
+                app:tint="@color/md_grey_500" />
 
-
-                />
-            <TextView
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/set_notify_messages"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Data usage"
-                android:layout_marginLeft="15dp"
-                android:layout_gravity="center_vertical"
-                android:gravity="center_vertical"
-                android:textSize="18sp"
-                />
+                android:layout_marginStart="15dp"
+                android:text="Message notifications"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="18sp" />
 
         </LinearLayout>
+
         <View
             android:layout_width="match_parent"
             android:layout_height="0.5dp"
-            android:background="@color/md_grey_300"
-            >
-        </View>
+            android:background="?android:attr/listDivider" />
+
         <LinearLayout
-            android:layout_margin="10dp"
-            android:id="@+id/set_about_layout"
-            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:src="@drawable/ic_group_black"
+                app:tint="@color/md_grey_500" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/set_notify_groups"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:text="Group message notifications"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="18sp" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="?android:attr/listDivider" />
+
+        <LinearLayout
+            android:id="@+id/set_theme_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:src="@drawable/ic_theme"
+                app:tint="@color/md_grey_500" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="15dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Theme"
+                    android:textColor="?android:attr/textColorPrimary"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/set_theme_value"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="System default"
+                    android:textColor="?android:attr/textColorSecondary"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="?android:attr/listDivider" />
+
+        <LinearLayout
+            android:id="@+id/privacy_policy_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/privacy_policy_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:src="@drawable/ic_notes"
+                app:tint="@color/md_grey_500" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="15dp"
+                android:gravity="center_vertical"
+                android:text="Privacy Policy and User Data"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="18sp" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="?android:attr/listDivider" />
+
+        <LinearLayout
+            android:id="@+id/set_about_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:orientation="horizontal">
 
             <ImageView
                 android:id="@+id/set_about_image"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:tint="@color/md_grey_500"
-                android:src="@drawable/ic_info_black_24dp"
                 android:layout_margin="10dp"
-                />
+                android:src="@drawable/ic_info_black_24dp"
+                app:tint="@color/md_grey_500" />
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="15dp"
-                android:text="About"
                 android:layout_gravity="center_vertical"
+                android:layout_marginLeft="15dp"
                 android:gravity="center_vertical"
-                android:textSize="18sp"
-                />
+                android:text="About"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="18sp" />
 
         </LinearLayout>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="0.5dp"
-            android:background="@color/md_grey_300"
-            >
-        </View>
+            android:background="?android:attr/listDivider" />
 
         <LinearLayout
-            android:layout_margin="10dp"
             android:id="@+id/set_logout_layout"
-            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:orientation="horizontal">
 
             <ImageView
                 android:id="@+id/set_logout_image"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:tint="@color/md_grey_500"
-                android:src="@drawable/ic_power_settings_new_black_24dp"
                 android:layout_margin="10dp"
-                />
+                android:src="@drawable/ic_power_settings_new_black_24dp"
+                app:tint="@color/md_grey_500" />
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="15dp"
-                android:text="Logout"
                 android:layout_gravity="center_vertical"
+                android:layout_marginLeft="15dp"
                 android:gravity="center_vertical"
-                android:textSize="18sp"
-                />
+                android:text="Logout"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="18sp" />
 
         </LinearLayout>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="0.5dp"
-            android:background="@color/md_grey_300"
-            >
-        </View>
+            android:background="?android:attr/listDivider" />
     </LinearLayout>
-
 
 </FrameLayout>

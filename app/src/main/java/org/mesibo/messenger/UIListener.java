@@ -1,27 +1,3 @@
-/******************************************************************************
-* By accessing or copying this work, you agree to comply with the following   *
-* terms:                                                                      *
-*                                                                             *
-* Copyright (c) 2019-2024 mesibo                                              *
-* https://mesibo.com                                                          *
-* All rights reserved.                                                        *
-*                                                                             *
-* Redistribution is not permitted. Use of this software is subject to the     *
-* conditions specified at https://mesibo.com . When using the source code,    *
-* maintain the copyright notice, conditions, disclaimer, and  links to mesibo * 
-* website, documentation and the source code repository.                      *
-*                                                                             *
-* Do not use the name of mesibo or its contributors to endorse products from  *
-* this software without prior written permission.                             *
-*                                                                             *
-* This software is provided "as is" without warranties. mesibo and its        *
-* contributors are not liable for any damages arising from its use.           *
-*                                                                             *
-* Documentation: https://docs.mesibo.com/                                     *
-*                                                                             *
-* Source Code Repository: https://github.com/mesibo/                          *
-*******************************************************************************/
-
 package org.mesibo.messenger;
 
 import android.app.Activity;
@@ -30,7 +6,6 @@ import android.content.Intent;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.mesibo.api.Mesibo;
 import com.mesibo.api.MesiboProfile;
 import com.mesibo.calls.api.MesiboCall;
 import com.mesibo.calls.ui.MesiboCallUi;
@@ -39,26 +14,50 @@ import com.mesibo.messaging.MesiboUI;
 import com.mesibo.messaging.MesiboUIListener;
 
 public class UIListener implements MesiboUIListener {
-    private static Context mLastUserListContext = null;
-    private static Context mLastMessagingContext = null;
     @Override
     public boolean MesiboUI_onInitScreen(MesiboUI.MesiboScreen screen) {
-        if(screen.userList) {
-            mLastUserListContext = screen.parent;
+        if(MesiboUI.SCREEN_USERLIST == screen.type) {
             initUserListScreen((MesiboUI.MesiboUserListScreen) screen);
-        } else {
-            mLastMessagingContext = screen.parent;
+        } else if (MesiboUI.SCREEN_MESSAGES == screen.type) {
             initMessageListScreen((MesiboUI.MesiboMessageScreen) screen);
         }
         return false;
     }
 
-    public static Context getLastUserListContext() {
-        return mLastUserListContext;
+    // a call started or ended (MesiboCall.CallMonitorListener -> MesiboUI.updateScreens)
+    @Override
+    public void MesiboUI_onUpdateScreen(MesiboUI.MesiboScreen screen) {
+        updateCallButtons(screen);
     }
 
-    public static Context getLastMessagingContext() {
-        return mLastMessagingContext;
+    /** during a call: the call in progress button instead of the voice / video call buttons */
+    void updateCallButtons(MesiboUI.MesiboScreen screen) {
+        if (null == screen.menu)
+            return;
+        boolean inCall = MesiboCall.getInstance().isAnyCallInProgress();
+        MenuItem progress = screen.menu.findItem(R.id.action_call_in_progress);
+        if (null != progress)
+            progress.setVisible(inCall);
+
+        if (MesiboUI.SCREEN_MESSAGES == screen.type) {
+            MesiboProfile profile = ((MesiboUI.MesiboMessageScreen) screen).profile;
+            boolean canCall = !inCall && !(null != profile && profile.isGroup() && !profile.isActive());
+            MenuItem call = screen.menu.findItem(R.id.action_call);
+            MenuItem video = screen.menu.findItem(R.id.action_videocall);
+            if (null != call) call.setVisible(canCall);
+            if (null != video) video.setVisible(canCall);
+        }
+    }
+
+    private void setCallInProgressHandler(MesiboUI.MesiboScreen screen) {
+        MenuItem progress = screen.menu.findItem(R.id.action_call_in_progress);
+        if (null != progress) {
+            progress.setOnMenuItemClickListener(item -> {
+                MesiboCall.getInstance().showCallInProgress(screen.parent);
+                return true;
+            });
+        }
+        updateCallButtons(screen);
     }
 
     @Override
@@ -88,6 +87,8 @@ public class UIListener implements MesiboUIListener {
             MesiboCall.getInstance().groupCallJoinRoomUi(context, "Mesibo Conferencing Demo");
         } else if(item == R.id.action_calllogs) {
             MesiboCallUi.getInstance().launchCallLogs(context, 0);
+        } else if(item == R.id.action_backup) {
+            if (context instanceof Activity) BackupRestore.show((Activity) context);
         } else if(item == R.id.action_menu_e2ee) {
             MesiboUI.showEndToEndEncryptionInfoForSelf(context);
         } else if(item == R.id.mesibo_share) {
@@ -113,8 +114,10 @@ public class UIListener implements MesiboUIListener {
         screen.menu.findItem(R.id.action_settings).setOnMenuItemClickListener(menuhandler);
         screen.menu.findItem(R.id.action_conf).setOnMenuItemClickListener(menuhandler);
         screen.menu.findItem(R.id.action_calllogs).setOnMenuItemClickListener(menuhandler);
+        screen.menu.findItem(R.id.action_backup).setOnMenuItemClickListener(menuhandler);
         screen.menu.findItem(R.id.action_menu_e2ee).setOnMenuItemClickListener(menuhandler);
         screen.menu.findItem(R.id.mesibo_share).setOnMenuItemClickListener(menuhandler);
+        setCallInProgressHandler(screen);
 
     }
 
@@ -123,13 +126,12 @@ public class UIListener implements MesiboUIListener {
             return;
         }
 
+        // during a call, callUi brings back the call in progress instead
         if(R.id.action_call == item) {
-            if(!MesiboCall.getInstance().callUi(context, profile, false))
-                MesiboCall.getInstance().callUiForExistingCall(context);
+            MesiboCall.getInstance().callUi(context, profile, false);
         }
         else if(R.id.action_videocall == item) {
-            if(!MesiboCall.getInstance().callUi(context, profile, true))
-                MesiboCall.getInstance().callUiForExistingCall(context);
+            MesiboCall.getInstance().callUi(context, profile, true);
         }
         else if(R.id.action_e2e == item) {
             MesiboUI.showEndToEndEncryptionInfo(context, profile.getAddress(), profile.groupid);
@@ -163,11 +165,12 @@ public class UIListener implements MesiboUIListener {
         screen.menu.findItem(R.id.action_call).setOnMenuItemClickListener(menuhandler);
         screen.menu.findItem(R.id.action_videocall).setOnMenuItemClickListener(menuhandler);
         screen.menu.findItem(R.id.action_e2e).setOnMenuItemClickListener(menuhandler);
+        setCallInProgressHandler(screen);
 
         screen.titleArea.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MesiboUI.showBasicProfileInfo(screen.parent, screen.profile);
+                MesiboUI.showProfile(screen.parent, screen.profile);
             }
         });
     }

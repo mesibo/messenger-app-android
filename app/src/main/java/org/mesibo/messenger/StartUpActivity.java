@@ -1,125 +1,173 @@
-/******************************************************************************
-* By accessing or copying this work, you agree to comply with the following   *
-* terms:                                                                      *
-*                                                                             *
-* Copyright (c) 2019-2024 mesibo                                              *
-* https://mesibo.com                                                          *
-* All rights reserved.                                                        *
-*                                                                             *
-* Redistribution is not permitted. Use of this software is subject to the     *
-* conditions specified at https://mesibo.com . When using the source code,    *
-* maintain the copyright notice, conditions, disclaimer, and  links to mesibo * 
-* website, documentation and the source code repository.                      *
-*                                                                             *
-* Do not use the name of mesibo or its contributors to endorse products from  *
-* this software without prior written permission.                             *
-*                                                                             *
-* This software is provided "as is" without warranties. mesibo and its        *
-* contributors are not liable for any damages arising from its use.           *
-*                                                                             *
-* Documentation: https://docs.mesibo.com/                                     *
-*                                                                             *
-* Source Code Repository: https://github.com/mesibo/                          *
-*******************************************************************************/
-
 package org.mesibo.messenger;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender;
+import android.os.Build;
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.IntentSenderRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.play.core.appupdate.AppUpdateInfo;
+import com.google.android.play.core.appupdate.AppUpdateManager;
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
+import com.google.android.play.core.appupdate.AppUpdateOptions;
+import com.google.android.play.core.install.model.AppUpdateType;
+import com.google.android.play.core.install.model.UpdateAvailability;
 import com.mesibo.api.Mesibo;
 import com.mesibo.messaging.MesiboUI;
-import com.mesibo.uihelper.MesiboUiHelperConfig;
 
+/**
+ * Trampoline activity: routes to login or the user list and then finishes.
+ *
+ * It must never be left alive in the task, otherwise bringing the task to the
+ * front (launcher icon, notification tap) shows its empty layout - the
+ * "blank startup" screen. Hence:
+ *  - every launch, including re-delivery via onNewIntent(), routes to the next screen
+ *  - the activity always finishes, whether or not the Play update check succeeds
+ * It is not noHistory: the permission and update dialogs cover it and must deliver results.
+ */
 public class StartUpActivity extends AppCompatActivity {
 
     private static final String TAG = "MesiboStartupActivity";
-    public final static String INTENTEXIT="exit";
-    public final static String SKIPTOUR="skipTour";
-    public final static String STARTINBACKGROUND ="startinbackground";
+    public final static String INTENTEXIT = "exit";
+    public final static String SKIPTOUR = "skipTour";
+    public final static String STARTINBACKGROUND = "startinbackground";
+
     private boolean mRunInBackground = false;
-    private boolean mPermissionAlert = false;
+    private boolean mUpdateFlowStarted = false;
+
+    private final ActivityResultLauncher<IntentSenderRequest> mUpdateLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartIntentSenderForResult(),
+                    result -> finish());
 
     public static void newInstance(Context context, boolean startInBackground) {
-        Intent i = new Intent(context, StartUpActivity.class);  //MyActivity can be anything which you want to start on bootup...
-        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        //i.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        i.putExtra(StartUpActivity.STARTINBACKGROUND, startInBackground);
-
+        Intent i = new Intent(context, StartUpActivity.class);
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        i.putExtra(STARTINBACKGROUND, startInBackground);
         context.startActivity(i);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        handleIntent(getIntent());
+    }
 
-        if(getIntent().getBooleanExtra(INTENTEXIT, false)) {
-            Log.d(TAG, "onCreate closing");
+    // singleTop: a launch while this activity is on top arrives here instead of onCreate.
+    // Previously such launches were ignored, leaving the blank screen visible.
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleIntent(intent);
+    }
+
+    private void handleIntent(Intent intent) {
+        if (intent.getBooleanExtra(INTENTEXIT, false)) {
             finish();
             return;
         }
 
+        // Only honour a background start when the app is genuinely not visible; a user
+        // tapping the launcher must never get the task pushed to the back.
+        mRunInBackground = intent.getBooleanExtra(STARTINBACKGROUND, false)
+                && !Mesibo.isAppInForeground()
+                && (Mesibo.getTimestamp() - Mesibo.getStartTimestamp()) <= 30000;
 
+        Log.d(TAG, "Starting " + (mRunInBackground ? "in background" : "in foreground"));
 
-        mRunInBackground = getIntent().getBooleanExtra(STARTINBACKGROUND, false);
-
-        long elapsed = Mesibo.getTimestamp() - Mesibo.getStartTimestamp();
-
-        Log.e(TAG, "Elapsed " + elapsed + ", " + (mRunInBackground?"background":"foreground"));
-        if(elapsed > 30000)
-            mRunInBackground = false;
-
-        if(mRunInBackground) {
-            Log.e(TAG, "Moving app to background");
+        if (mRunInBackground)
             moveTaskToBack(true);
-        } else {
-            Log.e(TAG, "Not Moving app to background");
-        }
 
-
-        setContentView(R.layout.activity_blank_launcher);
         startNextActivity();
     }
 
-    void startNextActivity() {
-
-        if(TextUtils.isEmpty(SampleAPI.getToken())) {
-            MesiboUiHelperConfig.mDefaultCountry = 1;
-            MesiboUiHelperConfig.mPhoneVerificationBottomText = "Note, Mesibo may call instead of sending an SMS if SMS delivery to your phone fails.";
-
-
-            if(getIntent().getBooleanExtra(SKIPTOUR, false)) {
-                UIManager.launchLogin(this, MesiboListeners.getInstance());
-            } else {
-                UIManager.launchWelcomeactivity(this, true, MesiboListeners.getInstance(), MesiboListeners.getInstance());
-            }
-
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-
-        } else {
-            MesiboUI.MesiboUserListScreenOptions opts = new MesiboUI.MesiboUserListScreenOptions();
-            opts.keepRunning = true;
-            opts.startInBackground = mRunInBackground;
-            UIManager.launchMesibo(this, opts);
+    private void startNextActivity() {
+        if (TextUtils.isEmpty(SampleAPI.getToken())) {
+            if (getIntent().getBooleanExtra(SKIPTOUR, false))
+                UIManager.launchLogin(this);
+            else
+                UIManager.launchWelcome(this);
+            fadeTransition();
+            onNextActivityStarted();
+            return;
         }
 
-        finish();
+        MesiboUI.MesiboUserListScreenOptions opts = new MesiboUI.MesiboUserListScreenOptions();
+        opts.keepRunning = true;
+        opts.startInBackground = mRunInBackground;
+
+        // no permission prompts when starting in background
+        if (mRunInBackground) {
+            UIManager.launchMesibo(this, opts);
+            onNextActivityStarted();
+            return;
+        }
+
+        UIManager.requestPermissions(this, () -> {
+            UIManager.launchMesibo(this, opts);
+            onNextActivityStarted();
+        });
     }
 
-    // since this activity is singleTask, intent will be delivered here if it's running
-    @Override
-    protected void onNewIntent(Intent intent) {
-        Log.d(TAG, "onNewIntent");
-        if(intent.getBooleanExtra(INTENTEXIT, false)) {
-            finish();
-        }
+    @SuppressWarnings("deprecation") // pre-34 branch
+    private void fadeTransition() {
+        if (Build.VERSION.SDK_INT >= 34)
+            overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, android.R.anim.fade_in, android.R.anim.fade_out);
+        else
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+    }
 
-        super.onNewIntent(intent);
+    private void onNextActivityStarted() {
+        if (mRunInBackground || mUpdateFlowStarted)
+            finish();
+        else
+            checkUpdates();
+    }
+
+    /* Testing tips:
+       https://stackoverflow.com/questions/57534545/appupdatemanager-startupdateflowforresult-not-showing-dialog
+     */
+    private void checkUpdates() {
+        AppUpdateManager appUpdateManager = AppUpdateManagerFactory.create(this);
+
+        // Previously only a success listener was attached: on sideloaded/debug builds, devices
+        // without Play, or network errors, the task failed and finish() was never called.
+        appUpdateManager.getAppUpdateInfo()
+                .addOnSuccessListener(info -> {
+                    if (!startUpdateFlow(appUpdateManager, info))
+                        finish();
+                })
+                .addOnFailureListener(e -> {
+                    Log.d(TAG, "Update check failed: " + e);
+                    finish();
+                });
+    }
+
+    private boolean startUpdateFlow(AppUpdateManager appUpdateManager, AppUpdateInfo info) {
+        if (info.updateAvailability() != UpdateAvailability.UPDATE_AVAILABLE)
+            return false;
+
+        int type;
+        if (info.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE))
+            type = AppUpdateType.IMMEDIATE;
+        else if (info.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE))
+            type = AppUpdateType.FLEXIBLE;
+        else
+            return false;
+
+        try {
+            mUpdateFlowStarted = appUpdateManager.startUpdateFlowForResult(info, mUpdateLauncher,
+                    AppUpdateOptions.newBuilder(type).build());
+        } catch (Exception e) {
+            Log.d(TAG, "Unable to start update flow: " + e);
+            mUpdateFlowStarted = false;
+        }
+        return mUpdateFlowStarted;
     }
 }

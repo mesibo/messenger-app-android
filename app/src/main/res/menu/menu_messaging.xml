@@ -11,6 +11,16 @@
         app:showAsAction="ifRoom" />
         -->
 
+    <!-- shown while a call is in progress (UIListener.updateCallButtons); green: app:iconTint
+         keeps Messaging from tinting it -->
+    <item
+        android:id="@+id/action_call_in_progress"
+        android:icon="@drawable/ic_call_in_progress_white_24dp"
+        android:title="Return to call"
+        android:visible="false"
+        app:iconTint="#FF1FAF5A"
+        app:showAsAction="always" />
+
     <item
         android:id="@+id/action_videocall"
         android:icon="@drawable/ic_videocam_white_24dp"

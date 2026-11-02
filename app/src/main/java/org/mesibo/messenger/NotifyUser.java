@@ -1,27 +1,3 @@
-/******************************************************************************
-* By accessing or copying this work, you agree to comply with the following   *
-* terms:                                                                      *
-*                                                                             *
-* Copyright (c) 2019-2024 mesibo                                              *
-* https://mesibo.com                                                          *
-* All rights reserved.                                                        *
-*                                                                             *
-* Redistribution is not permitted. Use of this software is subject to the     *
-* conditions specified at https://mesibo.com . When using the source code,    *
-* maintain the copyright notice, conditions, disclaimer, and  links to mesibo * 
-* website, documentation and the source code repository.                      *
-*                                                                             *
-* Do not use the name of mesibo or its contributors to endorse products from  *
-* this software without prior written permission.                             *
-*                                                                             *
-* This software is provided "as is" without warranties. mesibo and its        *
-* contributors are not liable for any damages arising from its use.           *
-*                                                                             *
-* Documentation: https://docs.mesibo.com/                                     *
-*                                                                             *
-* Source Code Repository: https://github.com/mesibo/                          *
-*******************************************************************************/
-
 package org.mesibo.messenger;
 
 import android.app.Notification;
@@ -31,24 +7,19 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioAttributes;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Build;
-import android.os.Bundle;
-import android.os.Handler;
+import android.provider.Settings;
 import androidx.core.app.NotificationCompat;
 import android.text.TextUtils;
 import android.widget.RemoteViews;
 
-import com.mesibo.api.Mesibo;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class NotifyUser {
+    public static final int ID_GROUP_JOINED=3;
+    public static final int ID_GROUP_LEFT=4;
     public static final int TYPE_MESSAGE=5;
     public static final int TYPE_OTHER=10;
     public static int mCount = 0;
@@ -62,62 +33,44 @@ public class NotifyUser {
     }
 
     private List<NotificationContent> mNotificationContentList = new ArrayList<NotificationContent>();
-    private Context mContxt = null;
-    private Uri mSoundUri = null;
-    private String mPackageName = null;
-    private TimerTask mTimerTask = null;
-    private Timer mTimer = null;
-    private Handler mUiHandler = new Handler(MainApplication.getAppContext().getMainLooper());
-    private static NotificationChannel mChannel = null;
+    private final Context mContxt;
 
-
-    public static String NOTIFYMESSAGE_CHANNEL_ID = "MesiboMessageNotificationChannel";
+    // Channel settings are immutable once created; the id was changed so that the corrected
+    // sound attributes apply to existing installs as well. The old channel is deleted.
+    public static final String NOTIFYMESSAGE_CHANNEL_ID = "MesiboMessages";
+    private static final String OLD_CHANNEL_ID = "MesiboAppNotificationChannel";
     private static final String NOTIFYMESSAGE_CHANNEL_NAME = "New Messages";
 
     public NotifyUser(Context context) {
         mContxt = context;
-        mPackageName = context.getPackageName();
-        createNotificationChannels();
-        Mesibo.addListener(this);
+        createNotificationChannel();
     }
 
-    private void createNotificationChannel(String id, String name, int importance) {
-        if (Build.VERSION.SDK_INT < 26) {
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT < 26)
             return;
-        }
 
-        NotificationChannel nchannel = new NotificationChannel(id, name, importance);
-
-        nchannel.setDescription("None");
-        nchannel.enableVibration(true);
-        nchannel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-        nchannel.setShowBadge(true);
+        NotificationChannel channel = new NotificationChannel(NOTIFYMESSAGE_CHANNEL_ID,
+                NOTIFYMESSAGE_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
+        channel.setDescription("Notifications for new messages");
+        channel.enableVibration(true);
+        channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+        channel.setShowBadge(true);
 
         AudioAttributes audioAttributes = new AudioAttributes.Builder()
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
                 .build();
+        channel.setSound(Settings.System.DEFAULT_NOTIFICATION_URI, audioAttributes);
 
-        mSoundUri = RingtoneManager.getActualDefaultRingtoneUri(mContxt, RingtoneManager.TYPE_NOTIFICATION);
-        nchannel.setSound(mSoundUri, audioAttributes);
-
-        NotificationManager notificationManager =
-                (NotificationManager) mContxt.getSystemService(Context.NOTIFICATION_SERVICE);
-
-        notificationManager.createNotificationChannel(nchannel);
-        mChannel = nchannel;
-        NOTIFYMESSAGE_CHANNEL_ID = mChannel.getId();
-
-    }
-
-    private void createNotificationChannels() {
-        createNotificationChannel(NOTIFYMESSAGE_CHANNEL_ID, NOTIFYMESSAGE_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
+        NotificationManager nm = (NotificationManager) mContxt.getSystemService(Context.NOTIFICATION_SERVICE);
+        nm.deleteNotificationChannel(OLD_CHANNEL_ID);
+        nm.createNotificationChannel(channel);
     }
 
     public void sendNotification(int id, PendingIntent intent, NotificationContent n) {
 
-        if(null == mChannel) createNotificationChannels();
-
+        // Use NotificationCompat.Builder to set up our notification.
         NotificationCompat.Builder builder = new NotificationCompat.Builder(mContxt, NOTIFYMESSAGE_CHANNEL_ID);
 
         builder.setPriority(NotificationCompat.PRIORITY_HIGH);
@@ -128,33 +81,39 @@ public class NotifyUser {
         if(null != n.content)
             builder.setContentText(n.content);
 
+        // The subtext, which appears under the text on newer devices.
+        // This will show-up in the devices with Android 4.2 and above only
         if(!TextUtils.isEmpty(n.subContent))
             builder.setSubText(n.subContent);
 
-        if(null != mSoundUri)
-            builder.setSound(mSoundUri);
-
         builder.setWhen(System.currentTimeMillis());
-        builder.setOngoing(true);
 
-        builder.setSmallIcon(R.drawable.ic_message); //R.drawable.notify_transparent)
+        // message notifications must be dismissible (was ongoing/sticky)
+        builder.setOngoing(false);
 
+        //icon appears in device notification bar and right hand corner of notification
+        //https://clevertap.com/blog/fixing-notification-icon-for-android-lollipop-and-above/
+        builder.setSmallIcon(R.drawable.ic_message_white_24dp);
+
+        // Set the intent that will fire when the user taps the notification.
         builder.setContentIntent(intent);
+        //builder.setFullScreenIntent(intent, true);
+
+        // Large icon appears on the left of the notification
+        //builder.setLargeIcon(BitmapFactory.decodeResource(mContxt.getResources(), R.drawable.notify_large));
 
         if(null != n.v) {
             builder.setCustomContentView(n.v);
-        }
-
-        if(null == n.style && null != n.content) {
         }
 
         if(null != n.style)
             builder.setStyle(n.style);
 
 
+        // clears on click
         builder.setAutoCancel(true);
+        // sound/vibration on Android 6-7; on 8+ the channel decides
         builder.setDefaults(Notification.DEFAULT_ALL);
-        builder.setChannelId(NOTIFYMESSAGE_CHANNEL_ID);
 
         Notification notification = builder.build();
 
@@ -169,16 +128,18 @@ public class NotifyUser {
         NotificationManager notificationManager = (NotificationManager) MainApplication.getAppContext().getSystemService(Context.NOTIFICATION_SERVICE);
 
         mNotificationContentList.clear();
+        // Will display the notification in the notification bar
         notificationManager.cancel(TYPE_MESSAGE);
         mCount = 0;
         mNotificationContentList.clear();
+        //notificationManager.cancel(TYPE_OTHER);
     }
 
     private PendingIntent getDefaultIntent(int code) {
+        // This intent is fired when notification is clicked
         Intent intent = new Intent(mContxt, StartUpActivity.class);
-        Bundle bundle = new Bundle();
-        intent.putExtras(bundle);
-        return PendingIntent.getActivity(mContxt, code, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        int immutable = Build.VERSION.SDK_INT >= 23 ? PendingIntent.FLAG_IMMUTABLE : 0;
+        return PendingIntent.getActivity(mContxt, code, intent, PendingIntent.FLAG_UPDATE_CURRENT | immutable);
     }
 
 
@@ -201,12 +162,8 @@ public class NotifyUser {
         if(mNotificationContentList.size() > 1) {
 
             inboxStyle = new NotificationCompat.InboxStyle();
-            Iterator iterator = mNotificationContentList.iterator();
-
-            while(iterator.hasNext()) {
-                NotificationContent n = (NotificationContent) iterator.next();
+            for (NotificationContent n : mNotificationContentList)
                 inboxStyle.addLine(n.title + " : " + n.content);
-            }
 
             inboxStyle.setBigContentTitle(title);
             inboxStyle.setSummaryText(mCount + " new messages");
@@ -215,15 +172,18 @@ public class NotifyUser {
             return;
         }
 
+        // Don't use notify object else we it will overwrite title
         sendNotification(TYPE_MESSAGE, title, notify.content);
     }
 
     public synchronized void sendNotificationInList(String title, String message) {
 
+        // it is also possible to limit only latest notification from a user by adding params and checking for duplicate
         NotificationContent notify = new NotificationContent();
         notify.title = title;
         notify.content = message;
 
+        // inboxStyle can only have max 5 messages
         if(mNotificationContentList.size() >= 5)
             mNotificationContentList.remove(0);
 
