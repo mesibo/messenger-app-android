@@ -1,5 +1,6 @@
 package org.mesibo.messenger;
 
+import androidx.annotation.NonNull;
 import android.app.Application;
 import android.content.Context;
 import android.util.Log;
@@ -42,6 +43,8 @@ public class MainApplication extends Application implements Mesibo.RestartListen
         return "org.mesibo.messenger.restart";
     }
 
+    /** set first thing in onCreate */
+    @NonNull
     public static Context getAppContext() {
         return mContext;
     }

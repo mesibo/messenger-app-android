@@ -1,5 +1,7 @@
 package org.mesibo.messenger;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
 import com.google.gson.Gson;
 
 import android.content.Context;
@@ -15,9 +17,9 @@ public class AppConfig {
     private static final String systemPreferenceKey = "mesibo-app-settings";
 
     public static class Configuration {
-        public String token = "";
-        public String phone = "";
-        public SampleAPI.Invite invite = null;
+        @NonNull public String token = "";
+        @NonNull public String phone = "";
+        @Nullable public SampleAPI.Invite invite = null; // from the server, may be missing
         public String uploadurl = null;
         public String downloadurl = null;
         public String uniqueid = null;
@@ -33,16 +35,17 @@ public class AppConfig {
     }
 
     //System Specific Preferences - does not change across logins
-    public static Configuration mConfig = new Configuration();
+    @NonNull public static Configuration mConfig = new Configuration();
 
     private boolean firstTime = false;
     private Context mContext;
-    SharedPreferences mSharedPref = null;
+    @NonNull final SharedPreferences mSharedPref;
 
     public static AppConfig getInstance() {
         return _instance;
     }
 
+    @NonNull
     public static Configuration getConfig() {
         return mConfig;
     }
@@ -73,10 +76,9 @@ public class AppConfig {
     public void getAppSetting() {
         Gson gson = new Gson();
         String json = mSharedPref.getString(systemPreferenceKey, "");
-        mConfig = gson.fromJson(json, Configuration.class);
-
-        if(null == mConfig)
-            mConfig = new Configuration();
+        // null for empty (first start) or invalid settings
+        Configuration c = gson.fromJson(json, Configuration.class);
+        mConfig = (null != c) ? c : new Configuration();
     }
 
     private void putAppSetting(SharedPreferences.Editor spe) {

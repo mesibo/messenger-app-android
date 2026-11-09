@@ -1,5 +1,7 @@
 package org.mesibo.messenger;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
 import static org.mesibo.messenger.MainApplication.getAppContext;
 
 import android.content.Context;
@@ -14,17 +16,16 @@ import com.mesibo.api.MesiboPhoneContact;
 import com.mesibo.api.MesiboProfile;
 
 import com.mesibo.api.Mesibo;
-import org.mesibo.messenger.fcm.MesiboPushHelper;
 import com.mesibo.messaging.MesiboDialogs;
 import com.mesibo.uihelper.MesiboLoginUiHelperListener;
 import com.mesibo.uihelper.MesiboLoginUiHelperResultCallback;
 
 
-public class MesiboListeners implements Mesibo.ConnectionListener, MesiboLoginUiHelperListener, Mesibo.MessageListener, Mesibo.MessageFilter, Mesibo.ProfileListener, Mesibo.ProfileCustomizationListener, Mesibo.CrashListener, MesiboPushHelper.PushListener, Mesibo.GroupListener, Mesibo.AppStateListener, Mesibo.EndToEndEncryptionListener {
+public class MesiboListeners implements Mesibo.ConnectionListener, MesiboLoginUiHelperListener, Mesibo.MessageListener, Mesibo.MessageFilter, Mesibo.ProfileListener, Mesibo.ProfileCustomizationListener, Mesibo.CrashListener, Mesibo.GroupListener, Mesibo.AppStateListener, Mesibo.EndToEndEncryptionListener {
     public static final String TAG = "MesiboListeners";
-    public static Context mLoginContext = null;
+    @Nullable public static Context mLoginContext = null;
     MesiboLoginUiHelperResultCallback mMesiboLoginUiHelperResultCallback = null;
-    Context mLastContext = null;
+    @Nullable Context mLastContext = null;
 
     @SuppressWarnings("all")
     private SampleAPI.ResponseHandler mHandler = new SampleAPI.ResponseHandler() {
@@ -37,10 +38,10 @@ public class MesiboListeners implements Mesibo.ConnectionListener, MesiboLoginUi
             if ("login".equals(response.op)) {
                 if (!TextUtils.isEmpty(SampleAPI.getToken())) {
                     if (response.isNewUser()) {
-                        UIManager.launchEditProfile(mLoginContext, true);
+                        UIManager.launchEditProfile(null != mLoginContext ? mLoginContext : getAppContext(), true);
                     } else {
                         // via startup: requests permissions, then opens the user list
-                        UIManager.launchStartupActivity(mLoginContext, true);
+                        UIManager.launchStartupActivity(null != mLoginContext ? mLoginContext : getAppContext(), true);
                     }
                 }
 
@@ -126,16 +127,18 @@ public class MesiboListeners implements Mesibo.ConnectionListener, MesiboLoginUi
     }
 
     @Override
-    public String Mesibo_onGetProfileName(MesiboProfile profile) {
+    @Nullable // null: the default (no custom name)
+    public String Mesibo_onGetProfileName(@NonNull MesiboProfile profile) {
         if(profile.isGroup()) {
             return null;
         }
         MesiboPhoneContact c = Mesibo.getPhoneContactsManager().getPhoneNumberInfo(profile.getAddress(), true);
-        return c.formattedPhoneNumber;
+        return (null != c) ? c.formattedPhoneNumber : null; // unknown number: the default
     }
 
     @Override
-    public Bitmap Mesibo_onGetProfileImage(MesiboProfile profile) {
+    @Nullable // null: the default (no custom picture)
+    public Bitmap Mesibo_onGetProfileImage(@NonNull MesiboProfile profile) {
         return null;
     }
 
@@ -180,7 +183,7 @@ public class MesiboListeners implements Mesibo.ConnectionListener, MesiboLoginUi
     }
 
     @Override
-    public void Mesibo_onGroupSettings(MesiboProfile mesiboProfile, MesiboGroupProfile.GroupSettings groupSettings, MesiboGroupProfile.MemberPermissions memberPermissions, MesiboGroupProfile.GroupPin[] groupPins) {
+    public void Mesibo_onGroupSettings(MesiboProfile mesiboProfile, MesiboGroupProfile.GroupSettings groupSettings, MesiboGroupProfile.MemberPermissions memberPermissions, @Nullable MesiboGroupProfile.GroupPin[] groupPins) {
 
     }
 
@@ -235,25 +238,11 @@ public class MesiboListeners implements Mesibo.ConnectionListener, MesiboLoginUi
         return true;
     }
 
-    private static volatile MesiboListeners _instance = null;
+    // created when the class is first used; the JVM makes this thread-safe
+    private static final MesiboListeners sInstance = new MesiboListeners();
+
+    @NonNull
     public static MesiboListeners getInstance() {
-        if(null==_instance)
-            synchronized(MesiboListeners.class) {
-                if(null == _instance) {
-                    _instance = new MesiboListeners();
-                }
-            }
-
-        return _instance;
-    }
-
-    @Override
-    public void Mesibo_onGCMToken(String token) {
-        SampleAPI.setGCMToken(token);
-    }
-
-    @Override
-    public void Mesibo_onGCMMessage(boolean inService) {
-        SampleAPI.onGCMMessage(inService);
+        return sInstance;
     }
 }

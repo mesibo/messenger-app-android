@@ -94,9 +94,10 @@ public class UIListener implements MesiboUIListener {
         } else if(item == R.id.mesibo_share) {
             Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
             sharingIntent.setType("text/plain");
-            sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, AppConfig.getConfig().invite.subject);
-            sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, AppConfig.getConfig().invite.text);
-            context.startActivity(Intent.createChooser(sharingIntent, AppConfig.getConfig().invite.title));
+            SampleAPI.Invite invite = AppConfig.getConfig().invite; // from the server; may be missing
+            sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, null != invite ? invite.subject : null);
+            sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, null != invite ? invite.text : null);
+            context.startActivity(Intent.createChooser(sharingIntent, null != invite ? invite.title : null));
         }
     }
 

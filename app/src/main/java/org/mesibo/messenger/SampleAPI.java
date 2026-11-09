@@ -1,5 +1,7 @@
 package org.mesibo.messenger;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -26,14 +28,13 @@ public class SampleAPI  {
     private static final String TAG="SampleAPI";
     private static NotifyUser mNotifyUser = null;
     private static boolean mSyncPending = true;
-    private static Context mContext = null;
+    @NonNull private static Context mContext; // the app context, set in init()
     private static boolean mResetSyncedContacts = false;
 
     public final static String KEY_SYNCEDCONTACTS = "AppSyncedContacts";
     public final static String KEY_SYNCEDDEVICECONTACTSTIME = "AppSyncedPhoneContactTs";
     public final static String KEY_SYNCEDCONTACTSTIME = "AppSyncedTsNew";
     public final static String KEY_AUTODOWNLOAD = "autodownload";
-    public final static String KEY_GCMTOKEN = "gcmtoken";
     public final static String KEY_NOTIFY_MESSAGES = "notifymessages";
     public final static String KEY_NOTIFY_GROUPS = "notifygroups";
 
@@ -161,7 +162,7 @@ public class SampleAPI  {
         public String errtitle;
         public String message;
         public String title;
-        public String token;
+        @Nullable public String token;
         // set with the token for a user without a profile yet; Object since it may come as
         // true, 1 or "1"
         @SerializedName("new_user")
@@ -171,7 +172,7 @@ public class SampleAPI  {
         public String status;
         public String members;
         public String photo;
-        public String phone;
+        @Nullable public String phone;
         public String cc;
 
         public Urls urls;
@@ -208,7 +209,7 @@ public class SampleAPI  {
     private static Gson mGson = new Gson();
     private static String mApiUrl = "https://messenger.mesibo.com";
 
-    private static boolean invokeApi(final Context context, final JSONObject postBunlde, String filePath, String formFieldName, boolean uiThread) {
+    private static boolean invokeApi(@Nullable final Context context, @NonNull final JSONObject postBunlde, @Nullable String filePath, @Nullable String formFieldName, boolean uiThread) {
         ResponseHandler http = new ResponseHandler() {
             @Override
             public void HandleAPIResponse(Response response) {
@@ -261,8 +262,8 @@ public class SampleAPI  {
             }
 
             if("login".equals(response.op) && !TextUtils.isEmpty(response.token)) {
-                AppConfig.getConfig().token = response.token; //TBD, save into preference
-                AppConfig.getConfig().phone = response.phone;
+                AppConfig.getConfig().token = null != response.token ? response.token : ""; //TBD, save into preference
+                AppConfig.getConfig().phone = null != response.phone ? response.phone : "";
                 mResetSyncedContacts = true;
                 mSyncPending = true;
 
@@ -299,7 +300,7 @@ public class SampleAPI  {
         Mesibo.setKey(SampleAPI.KEY_SYNCEDCONTACTSTIME, String.valueOf(timestamp));
     }
 
-    public static void init(Context context) {
+    public static void init(@NonNull Context context) {
         mContext = context;
 
         Mesibo api = Mesibo.getInstance();
@@ -340,7 +341,7 @@ public class SampleAPI  {
     public static String getDownloadUrl() { return AppConfig.getConfig().downloadurl; }
 
     public static void startOnlineAction() {
-        sendGCMToken();
+        MesiboPushHelper.sendToken();
         startSync();
     }
 
@@ -364,8 +365,8 @@ public class SampleAPI  {
 
     public static boolean startMesibo(boolean resetContacts) {
 
-        // sender id comes from google-services.json
-        MesiboPushHelper.startRegistration(MesiboListeners.getInstance());
+        // push (FCM): sender id comes from google-services.json
+        MesiboPushHelper.start();
 
         String path = Mesibo.getBasePath();
         MesiboUI.setMediaPath(path);
@@ -428,8 +429,7 @@ public class SampleAPI  {
     }
 
     public static void forceLogout(){
-        mGCMTokenSent = false;
-        Mesibo.setKey(KEY_GCMTOKEN, "");
+        MesiboPushHelper.reset();
         SampleAPI.saveLocalSyncedContacts("", 0);
         SampleAPI.saveSyncedTimestamp(0);
         Mesibo.stop(true);
@@ -525,44 +525,6 @@ public class SampleAPI  {
         if(null != mNotifyUser) mNotifyUser.sendNotificationInList(name, message);
     }
 
-    private static String mGCMToken = null;
-    private static boolean mGCMTokenSent = false;
-    public static synchronized void setGCMToken(String token) {
-        // FCM may rotate the token; a new token must be sent again
-        if(null != token && !token.equals(mGCMToken))
-            mGCMTokenSent = false;
-        mGCMToken = token;
-        sendGCMToken();
-    }
-
-    private static synchronized void sendGCMToken() {
-        if(null == mGCMToken || mGCMTokenSent)
-            return;
-        mGCMTokenSent = true;
-        Mesibo.setPushToken(mGCMToken);
-
-    }
-
-    /* Called on the FCM service thread. Block until online (bounded: FCM allows only a
-       short execution window per message) and give mesibo a moment to receive messages.
-     */
-    private static final long PUSH_WAIT_ONLINE_MS = 15000;
-    public static void onGCMMessage(boolean inService) {
-        Mesibo.setForegroundContext(null, -1, true);
-        if(!inService)
-            return;
-
-        long deadline = System.currentTimeMillis() + PUSH_WAIT_ONLINE_MS;
-        try {
-            while(Mesibo.STATUS_ONLINE != Mesibo.getConnectionStatus()
-                    && System.currentTimeMillis() < deadline) {
-                Thread.sleep(500);
-            }
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
 
     public static void notifyClear() {
         if(null != mNotifyUser) mNotifyUser.clearNotification();

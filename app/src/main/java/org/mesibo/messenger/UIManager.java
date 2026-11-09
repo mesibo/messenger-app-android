@@ -1,5 +1,6 @@
 package org.mesibo.messenger;
 
+import androidx.annotation.NonNull;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -23,7 +24,7 @@ public class UIManager {
 
     private static final int BRAND_COLOR = 0xff00868b;
 
-    public static void launchStartupActivity(Context context, boolean skipWelcome) {
+    public static void launchStartupActivity(@NonNull Context context, boolean skipWelcome) {
         Intent intent = new Intent(context, StartUpActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(StartUpActivity.SKIPTOUR, skipWelcome);
@@ -122,7 +123,7 @@ public class UIManager {
         context.startActivity(intent);
     }
 
-    public static void launchEditProfile(Context context, boolean newUser) {
+    public static void launchEditProfile(@NonNull Context context, boolean newUser) {
         MesiboUI.setEditProfileListener(new MesiboUI.MesiboEditProfileListener() {
             @Override
             public void MesiboEditProfile_onSaved(Activity activity, MesiboProfile profile, boolean newUser) {
@@ -135,6 +136,9 @@ public class UIManager {
 
         MesiboUI.MesiboEditProfileOptions opts = new MesiboUI.MesiboEditProfileOptions();
         opts.newUser = newUser;
+        // not from a screen (e.g. the app context): the screen needs a new task
+        if (!(context instanceof Activity))
+            opts.activityFlags = Intent.FLAG_ACTIVITY_NEW_TASK;
         MesiboUI.launchEditProfile(context, opts);
     }
 

@@ -68,7 +68,7 @@
 
         <!-- Firebase Notifications-->
         <service
-            android:name=".fcm.MesiboGcmListenerService"
+            android:name=".fcm.MesiboFcmService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />

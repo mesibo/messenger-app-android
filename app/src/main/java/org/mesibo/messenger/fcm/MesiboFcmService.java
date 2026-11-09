@@ -5,17 +5,17 @@ import androidx.annotation.NonNull;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
-public class MesiboGcmListenerService extends FirebaseMessagingService {
+/** FCM events; handled in MesiboPushHelper */
+public class MesiboFcmService extends FirebaseMessagingService {
 
-    // Runs on a background thread; the payload content is irrelevant, the push only
-    // wakes the app so that mesibo can connect and fetch pending messages.
+    // background thread; the push only wakes the app, the payload is not used
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
-        MesiboPushHelper.onMessage(true);
+        MesiboPushHelper.onMessage();
     }
 
     @Override
     public void onNewToken(@NonNull String token) {
-        MesiboPushHelper.onNewToken(token);
+        MesiboPushHelper.setToken(token);
     }
 }
