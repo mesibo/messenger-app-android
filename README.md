@@ -9,12 +9,12 @@
 Mesibo Messenger is available across various native and hybrid platforms, alongside its backend components:
 
 ### Mobile & Web Clients
-* **Flutter (Android & iOS):** [messenger-app-flutter](https://github.com/mesibo/messenger-app-flutter)
 * **Android (Java):** [messenger-app-android](https://github.com/mesibo/messenger-app-android)
 * **Android (Kotlin):** [messenger-app-android-kotlin](https://github.com/mesibo/messenger-app-android-kotlin)
 * **iOS (Swift):** [messenger-app-ios-swift](https://github.com/mesibo/messenger-app-ios-swift)
 * **iOS (Objective-C):** [messenger-app-ios](https://github.com/mesibo/messenger-app-ios)
 * **Web Messenger:** [messenger-javascript](https://github.com/mesibo/messenger-javascript)
+* **Flutter (Android & iOS):** [messenger-app-flutter](https://github.com/mesibo/messenger-app-flutter)
 
 ### Backend Services
 * **Backend APIs:** [messenger-app-backend](https://github.com/mesibo/messenger-app-backend)
