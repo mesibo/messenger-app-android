@@ -1,4 +1,10 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+// NOTE: The following script is entirely optional and used exclusively by the mesibo development team
+// to redirect build outputs to an internal development path. It is NOT required to build this project.
+// If you are an external contributor, you can safely ignore this block.
+final File mesiboScript = file("/code/android/java/buildscripts/mesibo.gradle")
+if (mesiboScript.exists()) {
+    apply from: mesiboScript
+} 
 
 buildscript {
     repositories {
