@@ -1,0 +1,34 @@
+<resources>
+
+    <!-- Application theme -->
+    <style name="AppTheme" parent="Theme.AppCompat">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <!-- this is to ensure to blank window appears when stating in background -->
+        <item name="android:windowDisablePreview">true</item>
+    </style>
+
+    <!-- StartUpActivity -->
+    <style name="ShowUserProfileTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/myPrimaryColor</item>
+        <item name="colorPrimaryDark">@color/myPrimaryDarkColor</item>
+        <item name="colorAccent">@color/myAccentColor</item>
+        <item name="android:textColorPrimary">@color/myTextPrimaryColor</item>
+        <item name="android:windowBackground">@color/window_background</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:fitsSystemWindows">false</item>
+    </style>
+
+    <!-- SettingsActivity; follows the system light/dark mode like the mesibo screens. Toolbar
+         and status bar colors are applied from MesiboUiDefaults / the mesibo theme -->
+    <style name="SettingsTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/myPrimaryColor</item>
+        <item name="colorPrimaryDark">@color/myPrimaryDarkColor</item>
+        <item name="colorAccent">@color/myAccentColor</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+</resources>

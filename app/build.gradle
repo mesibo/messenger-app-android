@@ -1,0 +1,71 @@
+apply plugin: 'com.android.application'
+
+// mesibo versions and settings (getMesiboVersion, getMesiboProperty, ...)
+apply from: "https://cdn.mesibo.com/android/mesibo.gradle"
+
+ext {
+    PUBLISH_VERSION = getMesiboVersion("MesiboApp")
+}
+
+android {
+    compileSdk getMesiboProperty("Mesibo_compileSdkVersion", null, true) as int
+
+    defaultConfig {
+        applicationId "org.mesibo.messenger"
+        minSdk getMesiboProperty("Mesibo_minSdkVersion", null, true) as int
+        targetSdk getMesiboProperty("Mesibo_targetSdkVersion", null, true) as int
+
+        versionCode getMesiboProperty("MesiboVersionCode_MesiboApp", null, true) as int
+        versionName project.PUBLISH_VERSION
+        buildConfigField "String", "BUILD_VERSION", "\"${project.PUBLISH_VERSION}\""
+        buildConfigField("String", "BUILD_TIMESTAMP", "\"${getMesiboBuildDate()}\"")
+    }
+
+    lint {
+        disable 'MissingTranslation'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            debuggable false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+
+        debug {
+            minifyEnabled false
+            debuggable true
+        }
+    }
+    namespace 'org.mesibo.messenger'
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.activity:activity:1.9.3'
+    implementation 'androidx.recyclerview:recyclerview:1.3.2' // MesiboRecycleViewHolder in UIListener
+    implementation 'androidx.annotation:annotation:1.9.1'
+    implementation 'com.google.android.material:material:1.12.0'
+
+    implementation 'com.google.android.play:app-update:2.1.0'
+
+    implementation platform('com.google.firebase:firebase-bom:33.7.0')
+    implementation 'com.google.firebase:firebase-messaging'
+
+    implementation 'com.google.code.gson:gson:2.11.0'
+
+    implementation "com.mesibo.api:uihelper:${getMesiboVersion("UiHelper")}"
+    implementation "com.mesibo.api:mesibo:${getMesiboVersion("Api")}"
+    implementation "com.mesibo.api:ui:${getMesiboVersion("Ui")}"
+    // Google Maps location picker; Messaging finds it at runtime (no import), else uses its basic picker
+    implementation "com.mesibo.api:locationpicker:${getMesiboVersion("LocationPicker")}"
+    implementation "com.mesibo.api:calls:${getMesiboVersion("Calls")}"
+}
+
+// this line needs to be at bottom else it gives error of version conflict
+apply plugin: 'com.google.gms.google-services'

@@ -1,0 +1,50 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.tringme.mychat.StartChatting">
+
+    <!--
+    <item
+        android:id="@+id/action_attachment"
+        android:icon="@drawable/ic_add_white_24dp"
+        android:title="Media"
+        app:showAsAction="ifRoom" />
+        -->
+
+    <!-- shown while a call is in progress (UIListener.updateCallButtons); green: app:iconTint
+         keeps Messaging from tinting it -->
+    <item
+        android:id="@+id/action_call_in_progress"
+        android:icon="@drawable/ic_call_in_progress_white_24dp"
+        android:title="Return to call"
+        android:visible="false"
+        app:iconTint="#FF1FAF5A"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_videocall"
+        android:icon="@drawable/ic_videocam_white_24dp"
+        android:visible="true"
+        android:title="Video Call"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_call"
+        android:icon="@drawable/ic_call_white_24dp"
+        android:visible="true"
+        android:title="Call"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_e2e"
+        android:icon="@drawable/ic_security_white"
+        android:visible="true"
+        android:title="End-to-end encryption"
+        app:showAsAction="collapseActionView" />
+
+    <!-- disappearing messages of this chat: how long the messages this user sends live -->
+    <item
+        android:id="@+id/action_disappearing"
+        android:title="Disappearing messages"
+        app:showAsAction="never" />
+</menu>
