@@ -4,6 +4,7 @@ Mesibo Messenger is an open-source real-time messaging, voice & video calling, a
 
 It is built on [mesibo APIs](https://mesibo.com). mesibo is completely free for development and non-commercial projects.
 
+![Messenger](screenshots/messenger.png)
 ---
 
 ## 🌐 Messenger Source Code Repositories
@@ -43,7 +44,6 @@ Mesibo Messenger Source Code is available across various native and hybrid platf
 * **Presence:** Online/offline status indicators.
 * **Notifications:** Integrated with Google and Apple push notification services.
 
-![Messenger](screenshots/messenger.png)
 ---
 
 ## 🔑 Compiling, Setting Up and Running the Demo
